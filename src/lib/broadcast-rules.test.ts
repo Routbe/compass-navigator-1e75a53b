@@ -10,3 +10,7 @@ it("webhooks and Mastodon require secure destinations",()=>{
 it("broadcast credentials occupy a distinct row from public platform identities",()=>{
  expect(broadcastProvider("mastodon")).toBe("omnicast_mastodon");
 });
+it("broadcast consent does not include aliases by default",()=>{
+ expect(broadcastInput.parse({provider:'telegram',token:'credential',chatId:'123'}).spaces).toEqual(['root']);
+ expect(broadcastInput.safeParse({provider:'telegram',token:'credential',chatId:'123',spaces:[]}).success).toBe(false);
+});

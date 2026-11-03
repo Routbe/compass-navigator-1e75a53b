@@ -17,10 +17,14 @@ import { ProceduralStoryBackground } from "./ProceduralStoryBackground";
 export function PresenceComposer({owner,handle,space,blocks}:{owner:string;handle:string;space:"root"|"alias";blocks:ProfileBlock[]}) {
  const {t}=useI18n();const query=useQueryClient();const post=useServerFn(postPresence);
  const [open,setOpen]=useState(false),[mode,setMode]=useState<"text"|"grid">("text"),[text,setText]=useState("");
- const [selected,setSelected]=useState(""),[busy,setBusy]=useState(false),[pending,setPending]=useState<StatusInput[]>([]);
+ const [selected,setSelected]=useState(""),[busy,setBusy]=useState(false);
+ const scope=JSON.stringify([owner,handle,space]);
+ const [pendingState,setPendingState]=useState<{scope:string;rows:StatusInput[]}>({scope:'',rows:[]});
+ const pending=pendingState.scope===scope?pendingState.rows:[];
+ const setPending=(update:(rows:StatusInput[])=>StatusInput[])=>setPendingState(state=>({scope,rows:update(state.scope===scope?state.rows:[])}));
  const [file,setFile]=useState<File|null>(null),[encoding,setEncoding]=useState(false);
  const candidates=spotlightCandidates(blocks);
- useEffect(()=>{void pendingStatuses(owner).then(rows=>setPending(rows.filter(r=>r.input.space===space).map(r=>r.input))).catch(()=>undefined);},[owner,space]);
+ useEffect(()=>{let alive=true;void pendingStatuses(owner).then(rows=>{if(alive)setPendingState({scope,rows:rows.filter(r=>r.input.space===space&&r.handle===handle).map(r=>r.input)});}).catch(()=>undefined);return()=>{alive=false;};},[owner,handle,space,scope]);
  // Prepare before the sharing click: recording for 3 seconds cannot preserve transient OS activation.
  useEffect(()=>{setFile(null);if(!open || mode!=="text" || !text.trim() || [...text].length>280) return;
   const controller=new AbortController();let alive=true;const timeout=setTimeout(()=>{setEncoding(true);void import("@/lib/qa/story-video").then(m=>m.renderPresenceVideo(text,controller.signal)).then(f=>{if(alive)setFile(f);}).catch(()=>undefined).finally(()=>{if(alive)setEncoding(false);});},600);
@@ -31,8 +35,8 @@ export function PresenceComposer({owner,handle,space,blocks}:{owner:string;handl
   try {
    await savePending(owner,handle,input).catch(()=>undefined);setPending(rows=>[...rows.filter(r=>r.id!==input.id),input]);
    window.dispatchEvent(new CustomEvent("rout-presence-pending",{detail:{owner,handle,space,input}}));
-   await post({data:input});await removePending(owner,input.id);setPending(rows=>rows.filter(r=>r.id!==input.id));
-   await query.invalidateQueries({queryKey:presenceKey(space,handle)});window.dispatchEvent(new CustomEvent("rout-presence-confirmed",{detail:{id:input.id}}));
+   await post({data:input});await removePending(owner,input.id).catch(()=>undefined);setPending(rows=>rows.filter(r=>r.id!==input.id));
+   await query.invalidateQueries({queryKey:presenceKey(space,handle)});window.dispatchEvent(new CustomEvent("rout-presence-confirmed",{detail:{owner,handle,space,id:input.id}}));
    setOpen(false);setText("");toast.success(t("presence.sent"));
   } catch {toast.error(t("presence.pending"));}finally{setBusy(false);}
  };

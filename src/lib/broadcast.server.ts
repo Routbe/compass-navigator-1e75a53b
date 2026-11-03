@@ -51,7 +51,10 @@ export async function deliverBroadcasts(owner:string){
   const cred=creds[0];if(!cred){await sql`update public.presence_broadcast_jobs set attempts=5,claimed_until=null,last_status=410 where id=${String(row['id'])}`;continue;}let status=0;
   try{const config=broadcastInput.parse(JSON.parse(await open(String(cred["access_token_enc"]),String(cred["access_token_iv"]),`omnicast:${owner}:${String(row["provider"])}`)));
    if(!config.spaces.includes(String(row['space']) as 'root'|'alias'))throw new Error('space_not_authorized');
-   const payload=row["payload"] as {text:string};status=await send(config,payload.text,String(row["id"]));
+   const current=await sql`select content_payload->>'text' as text from public.ephemeral_statuses where id=${String(row['event_id'])} and user_id=${owner} and space=${String(row['space'])}
+     union all select body || E'\n\n' || answer as text from public.profile_questions where id=${String(row['event_id'])} and owner_id=${owner} and space=${String(row['space'])} limit 1` as Record<string,unknown>[];
+   if(typeof current[0]?.['text']!=='string')throw new Error('missing_source');
+   status=await send(config,String(current[0]['text']),String(row["id"]));
   }catch{status=0;}
   // Ambiguous timeouts and providers without idempotency are not retried automatically.
   const retry=String(row["provider"])==="omnicast_mastodon" && status>=500;
