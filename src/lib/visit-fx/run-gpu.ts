@@ -35,37 +35,34 @@ export function runGpuVisitEffect(cfg: GpuRunConfig, container: HTMLElement | nu
   if (!renderer) { canvas.remove(); return null; }
 
   let done = false, latest: Float32Array | null = null, count = 0, raf = 0, safe = 0;
-  // Camera = scrollY. Lichamen in paginacoördinaten, dus scrollen vraagt geen nieuwe lichamen.
+  // Render-thread camera: de worker leeft in een absolute wereld; scrollY wordt elke rAF
+  // gelezen en als translatie in de WebGL-vertexshader toegepast. Nooit naar de worker.
   const camY = () => (container ? 0 : window.scrollY);
-  let g = { w: 0, h: 0, floor: 0, bodies: [] as Body[] };
+  let g = { w: 0, h: 0, floor: 0, page: 0, bodies: [] as Body[] };
   // Eén gebatchte layout-read; resultaat wordt gecachet tot de lay-out echt verandert.
   const measure = () => {
     const vr = container ? container.getBoundingClientRect() : new DOMRect(0, -window.scrollY, window.innerWidth, window.innerHeight);
     const w = container ? vr.width : window.innerWidth;
     const h = container ? Math.min(vr.height, window.innerHeight) : window.innerHeight;
-    g = { w, h, floor: h - safe, bodies: readBodies(container ?? document, vr, w, document.documentElement.scrollHeight) };
+    const page = container ? h : document.documentElement.scrollHeight;
+    g = { w, h, floor: container ? h : page - safe, page, bodies: readBodies(container ?? document, vr, w, page) };
   };
   const worker = new Worker(new URL("./physics.worker.ts", import.meta.url), { type: "module" });
   const t0 = performance.now();
   const post = (m: WorkerMsg) => worker.postMessage(m);
-  let relayout: ReturnType<typeof setTimeout> | null = null, camTimer: ReturnType<typeof setTimeout> | null = null, sentCam = camY();
+  let relayout: ReturnType<typeof setTimeout> | null = null;
   const onLayout = () => {
     if (relayout) clearTimeout(relayout);
     relayout = setTimeout(() => requestAnimationFrame(() => {
-      if (done) return; measure(); post({ type: "bodies", bodies: g.bodies, width: g.w, height: g.h, floor: g.floor });
+      if (done) return; measure(); post({ type: "bodies", bodies: g.bodies, width: g.w, height: g.h, floor: g.floor, pageHeight: g.page });
     }), 150);
-  };
-  // Hoogstens ~8 camera-berichten per seconde; renderen gebruikt scrollY rechtstreeks.
-  const onScroll = () => {
-    if (camTimer) return;
-    camTimer = setTimeout(() => { camTimer = null; const y = camY(); if (y !== sentCam) { sentCam = y; post({ type: "camera", y }); } }, 120);
   };
   const ro = new ResizeObserver(onLayout);
   const cleanup = () => {
     if (done) return; done = true;
     post({ type: "stop" }); worker.terminate(); cancelAnimationFrame(raf);
-    if (relayout) clearTimeout(relayout); if (camTimer) clearTimeout(camTimer);
-    ro.disconnect(); window.removeEventListener("scroll", onScroll);
+    if (relayout) clearTimeout(relayout);
+    ro.disconnect();
     renderer.dispose(); canvas.remove();
   };
   worker.onmessage = (e: MessageEvent<FrameMsg>) => {
@@ -88,9 +85,8 @@ export function runGpuVisitEffect(cfg: GpuRunConfig, container: HTMLElement | nu
     measure();
     ro.observe(container ?? document.documentElement);
     (container ?? document).querySelectorAll<HTMLElement>("[data-visit-collider], [data-block-id]").forEach((el) => ro.observe(el));
-    window.addEventListener("scroll", onScroll, { passive: true });
     const { emojis, ...rest } = cfg;
-    post({ type: "init", ...rest, textures: emojis.length, width: g.w, height: g.h, floor: g.floor, bodies: g.bodies, cameraY: camY() });
+    post({ type: "init", ...rest, textures: emojis.length, width: g.w, height: g.h, floor: g.floor, bodies: g.bodies, cameraY: camY(), pageHeight: g.page });
     raf = requestAnimationFrame(frame);
   });
   return cleanup;
