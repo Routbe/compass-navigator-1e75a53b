@@ -60,7 +60,6 @@ export function QuestionsInboxAccordion({ space, handle, displayName, avatarUrl,
       onCheckedChange={(v) => { if (v && !prefs.qaIntroSeen) setIntroOpen(true); onPref("questionsEnabled", v || prefs.qaPage); onPref("qaOnHub", v); }}
     >
       <div className="space-y-3">
-        {row(t("pages.qa.settings.accepting"), t("pages.qa.settings.acceptingHelp"), prefs.questionsEnabled && prefs.qaOnHub, (v) => { if (v && !prefs.qaIntroSeen) setIntroOpen(true); onPref("questionsEnabled", v || prefs.qaPage); onPref("qaOnHub", v); })}
         <label className="block space-y-2 text-sm">
           <span>{t("pages.qa.settings.audience")}</span>
           <Select value={prefs.qaAudience} onValueChange={(v) => onPref("qaAudience", v as QaPrefs["qaAudience"])}>
