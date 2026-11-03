@@ -241,6 +241,7 @@ import { Route as ApiPublicGalleryMediaRouteImport } from './routes/api_.public.
 import { Route as ApiPublicHealthRouteImport } from './routes/api_.public.health'
 import { Route as ApiPublicIntegrationsRouteImport } from './routes/api_.public.integrations'
 import { Route as ApiPublicProxyImageRouteImport } from './routes/api_.public.proxy-image'
+import { Route as ApiPublicStatusesRouteImport } from './routes/api_.public.statuses'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api_.public.stripe-webhook'
 import { Route as ApiPublicWeatherRouteImport } from './routes/api_.public.weather'
 import { Route as ApiSnapchatStartRouteImport } from './routes/api_.snapchat.start'
@@ -1566,6 +1567,11 @@ const ApiPublicProxyImageRoute = ApiPublicProxyImageRouteImport.update({
   path: '/api/public/proxy-image',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicStatusesRoute = ApiPublicStatusesRouteImport.update({
+  id: '/api_/public/statuses',
+  path: '/api/public/statuses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api_/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -2536,6 +2542,7 @@ export interface FileRoutesByFullPath {
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/integrations': typeof ApiPublicIntegrationsRouteWithChildren
   '/api/public/proxy-image': typeof ApiPublicProxyImageRoute
+  '/api/public/statuses': typeof ApiPublicStatusesRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/weather': typeof ApiPublicWeatherRoute
   '/api/snapchat/start': typeof ApiSnapchatStartRoute
@@ -2886,6 +2893,7 @@ export interface FileRoutesByTo {
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/integrations': typeof ApiPublicIntegrationsRouteWithChildren
   '/api/public/proxy-image': typeof ApiPublicProxyImageRoute
+  '/api/public/statuses': typeof ApiPublicStatusesRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/weather': typeof ApiPublicWeatherRoute
   '/api/snapchat/start': typeof ApiSnapchatStartRoute
@@ -3253,6 +3261,7 @@ export interface FileRoutesById {
   '/api_/public/health': typeof ApiPublicHealthRoute
   '/api_/public/integrations': typeof ApiPublicIntegrationsRouteWithChildren
   '/api_/public/proxy-image': typeof ApiPublicProxyImageRoute
+  '/api_/public/statuses': typeof ApiPublicStatusesRoute
   '/api_/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api_/public/weather': typeof ApiPublicWeatherRoute
   '/api_/snapchat/start': typeof ApiSnapchatStartRoute
@@ -3621,6 +3630,7 @@ export interface FileRouteTypes {
     | '/api/public/health'
     | '/api/public/integrations'
     | '/api/public/proxy-image'
+    | '/api/public/statuses'
     | '/api/public/stripe-webhook'
     | '/api/public/weather'
     | '/api/snapchat/start'
@@ -3971,6 +3981,7 @@ export interface FileRouteTypes {
     | '/api/public/health'
     | '/api/public/integrations'
     | '/api/public/proxy-image'
+    | '/api/public/statuses'
     | '/api/public/stripe-webhook'
     | '/api/public/weather'
     | '/api/snapchat/start'
@@ -4337,6 +4348,7 @@ export interface FileRouteTypes {
     | '/api_/public/health'
     | '/api_/public/integrations'
     | '/api_/public/proxy-image'
+    | '/api_/public/statuses'
     | '/api_/public/stripe-webhook'
     | '/api_/public/weather'
     | '/api_/snapchat/start'
@@ -4591,6 +4603,7 @@ export interface RootRouteChildren {
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicIntegrationsRoute: typeof ApiPublicIntegrationsRouteWithChildren
   ApiPublicProxyImageRoute: typeof ApiPublicProxyImageRoute
+  ApiPublicStatusesRoute: typeof ApiPublicStatusesRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicWeatherRoute: typeof ApiPublicWeatherRoute
   ApiSnapchatStartRoute: typeof ApiSnapchatStartRoute
@@ -6297,6 +6310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicProxyImageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api_/public/statuses': {
+      id: '/api_/public/statuses'
+      path: '/api/public/statuses'
+      fullPath: '/api/public/statuses'
+      preLoaderRoute: typeof ApiPublicStatusesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api_/public/stripe-webhook': {
       id: '/api_/public/stripe-webhook'
       path: '/api/public/stripe-webhook'
@@ -7914,6 +7934,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicIntegrationsRoute: ApiPublicIntegrationsRouteWithChildren,
   ApiPublicProxyImageRoute: ApiPublicProxyImageRoute,
+  ApiPublicStatusesRoute: ApiPublicStatusesRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicWeatherRoute: ApiPublicWeatherRoute,
   ApiSnapchatStartRoute: ApiSnapchatStartRoute,
