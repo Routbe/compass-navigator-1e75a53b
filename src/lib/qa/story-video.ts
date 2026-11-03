@@ -20,7 +20,8 @@ export async function renderPresenceVideo(text:string, signal?:AbortSignal):Prom
  const ink=`hsl(${styles.getPropertyValue("--story-card")})`;
  const family=getComputedStyle(document.body).fontFamily;
  let size=100,lines:string[]=[];
- while(size>=40) {ctx.font=`600 ${size}px ${family}`;lines=wrapText(s=>ctx.measureText(s).width,text,880);if(lines.length*size*1.3<1050) break;size-=4;}
+ while(size>=24) {ctx.font=`600 ${size}px ${family}`;lines=wrapText(s=>ctx.measureText(s).width,text,880);if(lines.length*size*1.3<1050) break;size-=4;}
+ const maxLines=Math.floor(1050/(size*1.3));if(lines.length>maxLines){lines=lines.slice(0,maxLines);lines[maxLines-1]=`${(lines[maxLines-1]??'').slice(0,-1)}…`;}
  const draw=(seconds:number)=>{engine.draw(seconds);ctx.drawImage(gpu,0,0);ctx.fillStyle=ink;ctx.textAlign="center";ctx.textBaseline="middle";ctx.font=`600 ${size}px ${family}`;
   lines.forEach((line,i)=>ctx.fillText(line,540,960+(i-(lines.length-1)/2)*size*1.3));ctx.font=`500 38px ${family}`;ctx.fillText("ROUT",540,1550);
  };

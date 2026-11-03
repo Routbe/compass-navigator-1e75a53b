@@ -1,8 +1,7 @@
 import {sql} from "./neon";
-import {broadcastInput,broadcastProvider,BROADCAST_PROVIDERS,type BroadcastConfig} from "./broadcast-rules";
+import {broadcastInput,broadcastProvider,type BroadcastConfig} from "./broadcast-rules";
 import {seal,open,encryptionConfigured} from "./crypto/secretbox.server";
 import {assertPublicHost} from "./safe-fetch.server";
-import {registerBackgroundTask} from "./background-task.server";
 import {signWebhook,SIGNATURE_HEADER} from "./webhooks/signature";
 export async function saveBroadcast(owner:string,raw:BroadcastConfig){
  const data=broadcastInput.parse(raw);
@@ -29,7 +28,7 @@ async function send(config:BroadcastConfig,text:string,id:string):Promise<number
  else if(config.provider==="telegram"){url=`https://api.telegram.org/bot${encodeURIComponent(config.token)}/sendMessage`;body={chat_id:config.chatId,text};}
  else if(config.provider==="webhook"){url=config.url??"";const json=JSON.stringify({id,type:"status.published",data:{text}});headers[SIGNATURE_HEADER]=await signWebhook(config.token,json,Math.floor(Date.now()/1000));body=JSON.parse(json);}
  else {
-  const login=await fetch("https://bsky.social/xrpc/com.atproto.server.createSession",{method:"POST",headers,body:JSON.stringify({identifier:config.handle,password:config.token}),signal:AbortSignal.timeout(10000)});
+  const login=await fetch("https://bsky.social/xrpc/com.atproto.server.createSession",{method:"POST",headers,body:JSON.stringify({identifier:config.handle,password:config.token}),redirect:"manual",signal:AbortSignal.timeout(10000)});
   if(!login.ok)return login.status;const session=await login.json() as {accessJwt:string;did:string};
   url="https://bsky.social/xrpc/com.atproto.repo.createRecord";headers["authorization"]=`Bearer ${session.accessJwt}`;body={repo:session.did,collection:"app.bsky.feed.post",record:{$type:"app.bsky.feed.post",text:[...text].slice(0,300).join(""),createdAt:new Date().toISOString()}};
  }
