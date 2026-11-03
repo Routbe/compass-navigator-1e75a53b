@@ -1,55 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireAuth } from "@/lib/auth/middleware";
-
-/** The caller's own Live Presence connections (no tokens). */
-export const getMyPresence = createServerFn({ method: "GET" })
-  .middleware([requireAuth])
-  .handler(async ({ context }) => {
-    const s = await import("./spotify-presence.server");
-    return { spotifyReady: s.spotifyConfigured(), connections: await s.myConnections(context.userId) };
-  });
-
-export const setSpotifyPresenceVisible = createServerFn({ method: "POST" })
-  .middleware([requireAuth])
-  .inputValidator((input: { show: boolean }) => ({ show: input?.show === true }))
-  .handler(async ({ data, context }) => {
-    const s = await import("./spotify-presence.server");
-    await s.setShowOnProfile(context.userId, data.show);
-    return { ok: true };
-  });
-
-export const disconnectSpotifyPresence = createServerFn({ method: "POST" })
-  .middleware([requireAuth])
-  .handler(async ({ context }) => {
-    const s = await import("./spotify-presence.server");
-    await s.disconnectSpotify(context.userId);
-    return { ok: true };
-  });
-
-export const setSpotifyPresenceScope = createServerFn({ method: "POST" })
-  .middleware([requireAuth])
-  .inputValidator((input: { verified: boolean; alias: boolean }) => ({
-    verified: input?.verified === true,
-    alias: input?.alias === true,
-  }))
-  .handler(async ({ data, context }) => {
-    const s = await import("./spotify-presence.server");
-    await s.setSpotifyScope(context.userId, data);
-    return { ok: true };
-  });
-
-/** Live check for the owner: what Spotify answers right now (bypasses the cache). */
-export const testSpotifyPresence = createServerFn({ method: "POST" })
-  .middleware([requireAuth])
-  .handler(async ({ context }) => {
-    const s = await import("./spotify-presence.server");
-    const { explainSpotifyReason } = await import("./spotify-status-rules");
-    if (!s.spotifyConfigured()) return { ok: false, message: "Spotify is nog niet ingesteld op ROUT (sleutels ontbreken)." };
-    try {
-      const np = await s.nowPlaying(context.userId);
-      return { ok: np.playing, message: explainSpotifyReason(np.reason ?? "error", np.title) };
-    } catch (e) {
-      console.error("[spotify] test failed", e instanceof Error ? e.message : e);
-      return { ok: false, message: "Spotify-toegang kon niet vernieuwd worden. Ontkoppel en koppel opnieuw." };
-    }
-  });
+import { z } from "zod";
+import { requireAuth } from "./auth/middleware";
+import { statusInput } from "./presence";
+export const getPublicPresence=createServerFn({method:"GET"})
+ .inputValidator((input:unknown)=>z.object({handle:z.string().regex(/^@?[A-Za-z0-9._-]{1,64}$/),space:z.enum(["root","alias"])}).parse(input))
+ .handler(async({data})=>{const {publicPresence}=await import("./presence.server");return {stories:await publicPresence(data.handle.replace(/^@/,""),data.space)};});
+export const postPresence=createServerFn({method:"POST"}).middleware([requireAuth])
+ .inputValidator((input:unknown)=>statusInput.parse(input))
+ .handler(async({data,context})=>{const {createPresence}=await import("./presence.server");return {story:await createPresence(context.userId,data)};});
