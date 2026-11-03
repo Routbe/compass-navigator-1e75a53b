@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog,DialogContent,DialogHeader,DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n";
-import { postPresence } from "@/lib/presence.functions";
+import { postPresence } from "@/lib/ephemeral.functions";
 import { presenceKey, spotlightCandidates, type StatusInput } from "@/lib/presence";
 import { pendingStatuses,savePending,removePending } from "@/lib/presence-local";
 import { shareStoryFile,supportsStoryShare } from "@/lib/qa/native-share";
