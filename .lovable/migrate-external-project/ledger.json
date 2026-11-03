@@ -1,0 +1,37 @@
+{
+  "repository": "https://github.com/Routbe/compass-navigator-08a5a8dc.git",
+  "commit": "fbe51a7",
+  "permission_confirmed": true,
+  "code": {
+    "status": "imported",
+    "files": {
+      "src": 2077,
+      "public": 102,
+      "db": 181,
+      "drizzle": 2,
+      "scripts": 20
+    }
+  },
+  "database": {
+    "status": "not_migrated",
+    "reason": "Source custom PostgreSQL schema requires reviewed adaptation; SQL references retained unapplied."
+  },
+  "accounts": {
+    "status": "blocked",
+    "reason": "Source user export and ownership mapping not supplied."
+  },
+  "services": {
+    "status": "unconfigured",
+    "reason": "Source provider credentials and data not included in repository."
+  },
+  "cloud": {
+    "status": "enabled",
+    "application_connected": false
+  },
+  "verification": {
+    "status": "pending"
+  },
+  "cutover": {
+    "status": "not_requested"
+  }
+}
