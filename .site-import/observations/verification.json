@@ -1,0 +1,67 @@
+{
+  "source": "https://github.com/Routbe/compass-navigator-08a5a8dc.git",
+  "method": "repository source archive, not GitHub webpage capture",
+  "permission_confirmed": true,
+  "controls": [
+    {
+      "layout": "desktop",
+      "control": "menu",
+      "status": "passed",
+      "screenshot": "desktop-menu.png"
+    },
+    {
+      "layout": "desktop",
+      "control": "explore and scroll",
+      "status": "passed",
+      "screenshot": "desktop-ecosystem.png"
+    },
+    {
+      "layout": "desktop",
+      "control": "command input",
+      "input": "/developers",
+      "status": "passed",
+      "destination": "http://localhost:8080/developers"
+    },
+    {
+      "layout": "desktop",
+      "control": "claim identity",
+      "status": "destination passed; account service blocked by missing original database and session configuration",
+      "destination": "http://localhost:8080/auth/sign-in",
+      "screenshot": "desktop-auth.png"
+    },
+    {
+      "layout": "phone",
+      "control": "menu",
+      "status": "passed",
+      "screenshot": "phone-menu.png"
+    },
+    {
+      "layout": "phone",
+      "control": "explore and scroll",
+      "status": "passed",
+      "screenshot": "phone-ecosystem.png"
+    },
+    {
+      "layout": "phone",
+      "control": "command input",
+      "input": "/developers",
+      "status": "passed",
+      "destination": "http://localhost:8080/developers"
+    },
+    {
+      "layout": "phone",
+      "control": "claim identity",
+      "status": "destination passed; account service blocked by missing original database and session configuration",
+      "destination": "http://localhost:8080/auth/sign-in",
+      "screenshot": "phone-auth.png"
+    }
+  ],
+  "source_visual_comparison": "blocked: repository homepage https://rout-rout.vercel.app redirects to Vercel login; no credentials entered",
+  "sections": "Homepage ecosystem and footer verified after wheel input on desktop and phone; original SVG/CSS visuals retained, no static substitutions. Phone wheel screenshots require draw readiness; settled screenshots show all sections.",
+  "tests": {
+    "passed": 17,
+    "files": 5
+  },
+  "build": "OK",
+  "remaining": "Existing accounts, data, uploaded objects, provider callbacks, payment/email/storage services require exports and secure configuration; not migrated."
+}

@@ -1,0 +1,233 @@
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ChevronDown, ChevronUp, Clapperboard, GripVertical, ImagePlus, Pin, Trash2 } from "lucide-react";
+
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { GalleryImageDialog } from "@/components/dashboard/GalleryImageDialog";
+import type { GalleryItem } from "@/lib/gallery";
+import { galleryImageSrc } from "@/lib/image-proxy-rules";
+import {
+  SOCIAL_GRID_MAX_ITEMS,
+  SOCIAL_GRID_PLATFORMS,
+  detectSocialGridTarget,
+  moveSocialGridItem,
+  newSocialGridItemId,
+  normalizeSocialGridTarget,
+  parseSocialGridConfig,
+  serializeSocialGridConfig,
+  type SocialGridConfig,
+  type SocialGridItem,
+} from "@/lib/social-grid";
+import { cn } from "@/lib/utils";
+
+/**
+ * Studio panel for the native Social Grid. Every change goes through the
+ * block value, so it lands in the private draft and only goes live on Publish.
+ */
+export function SocialGridBlockSettings({
+  value,
+  onChange,
+  onTitle,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onTitle: (label: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [dialog, setDialog] = useState(false);
+  const [open, setOpen] = useState<string | null>(null);
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+  /** Raw link text per card while typing; only valid links are stored. */
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const config = parseSocialGridConfig(value);
+  const full = config.items.length >= SOCIAL_GRID_MAX_ITEMS;
+
+  const update = (patch: Partial<SocialGridConfig>) => {
+    onChange(serializeSocialGridConfig({ ...config, ...patch }));
+    if (patch.title !== undefined) onTitle(patch.title.trim() || t("studio.grid.defaultTitle"));
+  };
+  const patchItem = (id: string, patch: Partial<SocialGridItem>) =>
+    update({ items: config.items.map((i) => (i.id === id ? { ...i, ...patch } : i)) });
+  const move = (from: number, to: number) => update({ items: moveSocialGridItem(config.items, from, to) });
+
+  const addFromDialog = (picked: GalleryItem) => {
+    const target = normalizeSocialGridTarget(picked.linkUrl ?? "") ?? undefined;
+    const detected = target ? detectSocialGridTarget(target) : null;
+    const item: SocialGridItem = {
+      id: newSocialGridItemId(),
+      mediaUrl: picked.url,
+      caption: picked.caption || picked.alt || undefined,
+      targetUrl: target,
+      platform: detected?.platform ?? (target ? "article" : "custom"),
+      isVideo: detected?.isVideo ?? false,
+      pinned: false,
+      createdAt: new Date().toISOString(),
+    };
+    update({ items: [...config.items, item].slice(0, SOCIAL_GRID_MAX_ITEMS) });
+    setOpen(item.id);
+  };
+
+  const onTargetInput = (item: SocialGridItem, raw: string) => {
+    setDrafts((d) => ({ ...d, [item.id]: raw }));
+    if (!raw.trim()) {
+      patchItem(item.id, { targetUrl: undefined });
+      return;
+    }
+    const target = normalizeSocialGridTarget(raw);
+    if (!target) return;
+    const detected = detectSocialGridTarget(target);
+    patchItem(item.id, detected ? { targetUrl: target, platform: detected.platform, isVideo: detected.isVideo } : { targetUrl: target });
+  };
+
+  return (
+    <div className="space-y-2.5 rounded-xl border border-border/60 bg-background p-3">
+      <p className="text-[11px] font-medium text-foreground">{t("studio.grid.heading")}</p>
+
+      <Input
+        className="input-field h-9 rounded-xl"
+        placeholder={t("studio.grid.titlePlaceholder")}
+        maxLength={80}
+        value={config.title}
+        onChange={(e) => update({ title: e.target.value })}
+        aria-label={t("studio.grid.titleLabel")}
+      />
+
+      {config.items.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-[11px] text-muted-foreground">
+          {t("studio.grid.empty")}
+        </p>
+      ) : (
+        <ul className="space-y-1.5">
+          {config.items.map((item, index) => {
+            const expanded = open === item.id;
+            const raw = drafts[item.id] ?? item.targetUrl ?? "";
+            const targetInvalid = raw.trim() !== "" && normalizeSocialGridTarget(raw) === null;
+            return (
+              <li
+                key={item.id}
+                draggable
+                onDragStart={(e) => { setDragFrom(index); e.dataTransfer.effectAllowed = "move"; }}
+                onDragOver={(e) => { if (dragFrom === null) return; e.preventDefault(); setDragOver(index); }}
+                onDragLeave={() => setDragOver((v) => (v === index ? null : v))}
+                onDrop={(e) => { e.preventDefault(); if (dragFrom !== null) move(dragFrom, index); setDragFrom(null); setDragOver(null); }}
+                onDragEnd={() => { setDragFrom(null); setDragOver(null); }}
+                className={cn(
+                  "rounded-lg border border-border/60 bg-background transition-colors",
+                  dragOver === index && dragFrom !== index && "border-foreground",
+                  dragFrom === index && "opacity-50",
+                )}
+              >
+                <div className="flex items-center gap-1.5 p-1.5">
+                  <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-muted-foreground" aria-label={t("studio.grid.drag")} />
+                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
+                    <img src={galleryImageSrc(item.mediaUrl) ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    {item.isVideo && <Clapperboard className="absolute right-0.5 top-0.5 h-3 w-3 text-background drop-shadow" aria-hidden />}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(expanded ? null : item.id)}
+                    aria-expanded={expanded}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <span className="block truncate text-[11px] font-medium text-foreground">
+                      {item.caption || t(`studio.grid.platform.${item.platform}`)}
+                    </span>
+                    <span className="block truncate text-[10px] text-muted-foreground">
+                      {item.targetUrl || t("studio.grid.noTarget")}
+                    </span>
+                  </button>
+                  {item.pinned && <Pin className="h-3.5 w-3.5 shrink-0 text-foreground" aria-label={t("studio.grid.pinned")} />}
+                  <button type="button" aria-label={t("studio.grid.moveUp")} disabled={index === 0} onClick={() => move(index, index - 1)} className="rounded-md p-1 text-muted-foreground hover:bg-muted disabled:opacity-30">
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button type="button" aria-label={t("studio.grid.moveDown")} disabled={index === config.items.length - 1} onClick={() => move(index, index + 1)} className="rounded-md p-1 text-muted-foreground hover:bg-muted disabled:opacity-30">
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                {expanded && (
+                  <div className="space-y-2 border-t border-border/60 p-2">
+                    <label className="block space-y-1">
+                      <span className="text-[10px] font-medium text-muted-foreground">{t("studio.grid.target")}</span>
+                      <Input
+                        className="input-field h-9 rounded-xl"
+                        inputMode="url"
+                        placeholder={t("studio.grid.targetPlaceholder")}
+                        value={raw}
+                        onChange={(e) => onTargetInput(item, e.target.value)}
+                        aria-invalid={targetInvalid}
+                      />
+                      {targetInvalid && <span className="block text-[10px] text-destructive">{t("studio.grid.targetError")}</span>}
+                    </label>
+                    <label className="block space-y-1">
+                      <span className="text-[10px] font-medium text-muted-foreground">{t("studio.grid.caption")}</span>
+                      <Input
+                        className="input-field h-9 rounded-xl"
+                        maxLength={150}
+                        value={item.caption ?? ""}
+                        onChange={(e) => patchItem(item.id, { caption: e.target.value || undefined })}
+                      />
+                    </label>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-medium text-muted-foreground">{t("studio.grid.platformLabel")}</span>
+                      <div className="grid grid-cols-4 gap-1">
+                        {SOCIAL_GRID_PLATFORMS.map((p) => (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => patchItem(item.id, { platform: p })}
+                            aria-pressed={item.platform === p}
+                            className={cn(
+                              "rounded-lg border px-1 py-1.5 text-[10px] font-medium",
+                              item.platform === p ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:bg-muted",
+                            )}
+                          >
+                            {t(`studio.grid.platform.${p}`)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <label className="flex items-center justify-between gap-2">
+                      <span>
+                        <span className="block text-[11px] font-medium text-foreground">{t("studio.grid.video")}</span>
+                        <span className="block text-[10px] text-muted-foreground">{t("studio.grid.videoHint")}</span>
+                      </span>
+                      <Switch checked={item.isVideo} onCheckedChange={(v) => patchItem(item.id, { isVideo: v })} />
+                    </label>
+                    <label className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-medium text-foreground">{t("studio.grid.pin")}</span>
+                      <Switch checked={item.pinned} onCheckedChange={(v) => patchItem(item.id, { pinned: v })} />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => update({ items: config.items.filter((i) => i.id !== item.id) })}
+                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> {t("studio.grid.delete")}
+                    </button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setDialog(true)}
+        disabled={full}
+        className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-border text-[11px] font-medium hover:bg-muted disabled:opacity-50"
+      >
+        <ImagePlus className="h-3.5 w-3.5" /> {t("studio.grid.add")}
+      </button>
+      <p className="text-[10px] text-muted-foreground">
+        {t("studio.grid.count", { count: config.items.length, max: SOCIAL_GRID_MAX_ITEMS })}
+      </p>
+
+      <GalleryImageDialog open={dialog} onOpenChange={setDialog} onAdd={addFromDialog} />
+    </div>
+  );
+}
