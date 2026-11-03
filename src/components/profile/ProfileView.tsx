@@ -324,7 +324,7 @@ export function ProfileView({
       if (detail?.custom) {
         detail.handled = true;
         stopTestRef.current?.();
-        stopTestRef.current = runCustomVisitEffect(normalizeVisitCustom(detail.custom), { force: true, container: mainRef.current });
+        stopTestRef.current = runCustomVisitEffect(normalizeVisitCustom(detail.custom), { force: true, immediate: true, container: mainRef.current });
         return;
       }
       const effect = isVisitEffect(detail?.effect) ? detail.effect : prefs.visitEffect;
