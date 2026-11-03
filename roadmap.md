@@ -1,4 +1,9 @@
 # Repository import
+- [ ] Audit imported status/Q&A, unified profile blocks, sharing and broadcasting against the new directives.
+- [ ] Implement text-only 24-hour presence with strict payload validation, existing publication/privacy boundaries, and unified block spotlights.
+- [ ] Implement fullscreen kinetic viewer, procedural backgrounds, local pending drafts, and native image/video sharing with honest capability handling.
+- [ ] Integrate composer in the existing Studio and Q&A flow; verify rules, rendering, expiry, and available end-to-end flows.
+- [ ] Implement open-network broadcasting with encrypted per-user credentials and durable delivery; provider setup may remain externally blocked.
 - [x] Connect Neon and inspect the actual runtime role and schema without altering existing data.
 - [x] Integrate social grid management in the existing profile studio with localized copy, manual edits, pinning, ordering, and video indicators.
 - [x] Apply and verify the owner-scoped Neon grid index; preserve published profile rendering; 23 targeted tests passed.
