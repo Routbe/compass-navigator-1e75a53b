@@ -667,5 +667,7 @@
   "presence.encryptionMissing": "Secure credential storage is not configured.",
   "presence.endpoint": "Destination URL",
   "presence.credential": "API token / app password / webhook secret",
-  "presence.connect": "Connect"
+  "presence.connect": "Connect",
+  "presence.broadcastRoot": "Automatically share from my main profile",
+  "presence.broadcastAlias": "Automatically share from my alias profile"
 }

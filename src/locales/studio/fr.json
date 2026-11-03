@@ -667,5 +667,7 @@
   "presence.encryptionMissing": "Stockage sécurisé non configuré.",
   "presence.endpoint": "Adresse de destination",
   "presence.credential": "Jeton API / mot de passe d’application / secret webhook",
-  "presence.connect": "Connecter"
+  "presence.connect": "Connecter",
+  "presence.broadcastRoot": "Partager automatiquement depuis mon profil principal",
+  "presence.broadcastAlias": "Partager automatiquement depuis mon profil alias"
 }

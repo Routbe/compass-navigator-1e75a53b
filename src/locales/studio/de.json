@@ -667,5 +667,7 @@
   "presence.encryptionMissing": "Sichere Schlüsselspeicherung nicht eingerichtet.",
   "presence.endpoint": "Zieladresse",
   "presence.credential": "API-Token / App-Passwort / Webhook-Secret",
-  "presence.connect": "Verbinden"
+  "presence.connect": "Verbinden",
+  "presence.broadcastRoot": "Automatisch von meinem Hauptprofil teilen",
+  "presence.broadcastAlias": "Automatisch von meinem Aliasprofil teilen"
 }

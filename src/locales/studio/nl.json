@@ -667,5 +667,7 @@
   "presence.encryptionMissing": "Veilige sleutelopslag is nog niet ingesteld.",
   "presence.endpoint": "Bestemmingsadres",
   "presence.credential": "API-token / app-wachtwoord / webhooksecret",
-  "presence.connect": "Koppelen"
+  "presence.connect": "Koppelen",
+  "presence.broadcastRoot": "Automatisch delen vanaf mijn hoofdprofiel",
+  "presence.broadcastAlias": "Automatisch delen vanaf mijn aliasprofiel"
 }
