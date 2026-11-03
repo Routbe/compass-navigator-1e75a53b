@@ -13,6 +13,7 @@ import { qaPaths, type QaSpace } from "@/components/qa/useQaPublic";
 import { cn } from "@/lib/utils";
 import type { ProfileDisplayPrefs } from "@/lib/profile-display";
 import { StudioSectionIcon } from "./StudioSectionIcon";
+import { StudioToggleCard } from "./StudioToggleCard";
 
 export type QaPrefs = Pick<ProfileDisplayPrefs, "questionsEnabled" | "qaPrompt" | "qaPromptCustom" | "qaOnHub" | "qaPage" | "qaAudience" | "qaIntroSeen">;
 
@@ -49,15 +50,16 @@ export function QuestionsInboxAccordion({ space, handle, displayName, avatarUrl,
   );
 
   return (
-    <details className="border-t border-border pt-4" id="studio-qa">
-      <summary className="flex min-h-11 cursor-pointer items-center gap-2">
-        <StudioSectionIcon kind="questions" />
-        <span className="min-w-0 flex-1 text-left">
-          <span className="block text-sm font-medium">{t("pages.qa.inbox.title")}</span>
-          <span className="block truncate text-xs text-muted-foreground">{headline}</span>
-        </span>
-      </summary>
-      <div className="space-y-3 py-3">
+    <>
+    <StudioToggleCard
+      id="studio-qa"
+      icon={<StudioSectionIcon kind="questions" />}
+      title={t("pages.qa.inbox.title")}
+      subtitle={headline}
+      checked={prefs.questionsEnabled && prefs.qaOnHub}
+      onCheckedChange={(v) => { if (v && !prefs.qaIntroSeen) setIntroOpen(true); onPref("questionsEnabled", v || prefs.qaPage); onPref("qaOnHub", v); }}
+    >
+      <div className="space-y-3">
         {row(t("pages.qa.settings.accepting"), t("pages.qa.settings.acceptingHelp"), prefs.questionsEnabled && prefs.qaOnHub, (v) => { if (v && !prefs.qaIntroSeen) setIntroOpen(true); onPref("questionsEnabled", v || prefs.qaPage); onPref("qaOnHub", v); })}
         <label className="block space-y-2 text-sm">
           <span>{t("pages.qa.settings.audience")}</span>
@@ -143,6 +145,7 @@ export function QuestionsInboxAccordion({ space, handle, displayName, avatarUrl,
           avatarUrl={avatarUrl}
         />
       )}
-    </details>
+    </StudioToggleCard>
+    </>
   );
 }
