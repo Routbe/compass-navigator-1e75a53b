@@ -9,9 +9,12 @@ export type WorkerInit = {
   fade: boolean; floorMode: "through" | "vanish" | "bounce" | "splat";
   rampInMs: number; rampOutMs: number; totalMs: number;
   bodies: Body[];
+  /** Camera Y (scrollY). Lichamen staan in paginacoördinaten; floor is relatief aan het scherm. */
+  cameraY?: number;
 };
 export type WorkerMsg =
   | WorkerInit
   | { type: "bodies"; bodies: Body[]; width: number; height: number; floor: number }
+  | { type: "camera"; y: number }
   | { type: "stop" };
 export type FrameMsg = { type: "frame"; data: Float32Array; count: number } | { type: "done" };

@@ -22,5 +22,6 @@ scope.onmessage = (e: MessageEvent<WorkerMsg>) => {
   const m = e.data;
   if (m.type === "init") { world = new VisitWorld(m); last = performance.now(); loop(); }
   else if (m.type === "bodies") world?.setBodies(m.bodies, m.width, m.height, m.floor);
+  else if (m.type === "camera") world?.setCamera(m.y);
   else { world = null; if (timer) clearTimeout(timer); }
 };
