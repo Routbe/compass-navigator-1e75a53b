@@ -10,6 +10,7 @@
  */
 
 import { isAllowedProxyUrl } from "./image-proxy-rules";
+import { isOmniContentType, type OmniContentType } from "./omni-ingest";
 
 export const SOCIAL_GRID_KIND = "social_grid";
 export const SOCIAL_GRID_PLATFORMS = ["instagram", "tiktok", "article", "custom"] as const;
@@ -31,6 +32,14 @@ export interface SocialGridItem {
   /** Pinned cards always come first on the public hub. */
   pinned: boolean;
   createdAt: string;
+  /** Omni-Matrix semantics: drives the corner badge. Absent on older cards. */
+  contentType?: OmniContentType;
+  /** Short context such as "5 min" or "45:00". */
+  metaTag?: string;
+  /** Hero cards span two columns on the public hub. */
+  isHero?: boolean;
+  /** First-party WebM/MP4 loop played on hover / long-press. */
+  kineticPreviewUrl?: string;
 }
 
 export interface SocialGridConfig {
@@ -146,6 +155,13 @@ export function parseSocialGridConfig(raw: string | null | undefined): SocialGri
       isVideo: i["isVideo"] === true,
       pinned: i["pinned"] === true,
       createdAt: isoOrNull(i["createdAt"]) ?? new Date(0).toISOString(),
+      contentType: isOmniContentType(i["contentType"]) ? i["contentType"] : undefined,
+      metaTag: str(i["metaTag"], 40) || undefined,
+      isHero: i["isHero"] === true || undefined,
+      kineticPreviewUrl: (() => {
+        const v = str(i["kineticPreviewUrl"], 2000);
+        return v.startsWith(GALLERY_MEDIA_PREFIX) ? v : undefined;
+      })(),
     });
   }
   return { title: str(obj["title"], 80), items };

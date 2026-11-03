@@ -330,6 +330,8 @@ import { Route as ApiPublicCronSyncFollowersRouteImport } from './routes/api_.pu
 import { Route as ApiPublicCronSyncSocialsRouteImport } from './routes/api_.public.cron.sync-socials'
 import { Route as ApiPublicIdentityDiditWebhookRouteImport } from './routes/api_.public.identity.didit-webhook'
 import { Route as ApiPublicIdentityWCallbackRouteImport } from './routes/api_.public.identity.w-callback'
+import { Route as ApiPublicIngestGridRouteImport } from './routes/api_.public.ingest.grid'
+import { Route as ApiPublicIngestOmniRouteImport } from './routes/api_.public.ingest.omni'
 import { Route as ApiPublicLastfmHandleRouteImport } from './routes/api_.public.lastfm.$handle'
 import { Route as ApiPublicMastodonServersRouteImport } from './routes/api_.public.mastodon.servers'
 import { Route as ApiPublicMastodonStartRouteImport } from './routes/api_.public.mastodon.start'
@@ -2057,6 +2059,16 @@ const ApiPublicIdentityWCallbackRoute =
     path: '/api/public/identity/w-callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicIngestGridRoute = ApiPublicIngestGridRouteImport.update({
+  id: '/api_/public/ingest/grid',
+  path: '/api/public/ingest/grid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicIngestOmniRoute = ApiPublicIngestOmniRouteImport.update({
+  id: '/api_/public/ingest/omni',
+  path: '/api/public/ingest/omni',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicLastfmHandleRoute = ApiPublicLastfmHandleRouteImport.update({
   id: '/api_/public/lastfm/$handle',
   path: '/api/public/lastfm/$handle',
@@ -2633,6 +2645,8 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
   '/api/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
   '/api/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
+  '/api/public/ingest/grid': typeof ApiPublicIngestGridRoute
+  '/api/public/ingest/omni': typeof ApiPublicIngestOmniRoute
   '/api/public/lastfm/$handle': typeof ApiPublicLastfmHandleRoute
   '/api/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api/public/mastodon/start': typeof ApiPublicMastodonStartRoute
@@ -2983,6 +2997,8 @@ export interface FileRoutesByTo {
   '/api/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
   '/api/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
   '/api/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
+  '/api/public/ingest/grid': typeof ApiPublicIngestGridRoute
+  '/api/public/ingest/omni': typeof ApiPublicIngestOmniRoute
   '/api/public/lastfm/$handle': typeof ApiPublicLastfmHandleRoute
   '/api/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api/public/mastodon/start': typeof ApiPublicMastodonStartRoute
@@ -3352,6 +3368,8 @@ export interface FileRoutesById {
   '/api_/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
   '/api_/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
   '/api_/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
+  '/api_/public/ingest/grid': typeof ApiPublicIngestGridRoute
+  '/api_/public/ingest/omni': typeof ApiPublicIngestOmniRoute
   '/api_/public/lastfm/$handle': typeof ApiPublicLastfmHandleRoute
   '/api_/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api_/public/mastodon/start': typeof ApiPublicMastodonStartRoute
@@ -3721,6 +3739,8 @@ export interface FileRouteTypes {
     | '/api/public/cron/sync-socials'
     | '/api/public/identity/didit-webhook'
     | '/api/public/identity/w-callback'
+    | '/api/public/ingest/grid'
+    | '/api/public/ingest/omni'
     | '/api/public/lastfm/$handle'
     | '/api/public/mastodon/servers'
     | '/api/public/mastodon/start'
@@ -4071,6 +4091,8 @@ export interface FileRouteTypes {
     | '/api/public/cron/sync-socials'
     | '/api/public/identity/didit-webhook'
     | '/api/public/identity/w-callback'
+    | '/api/public/ingest/grid'
+    | '/api/public/ingest/omni'
     | '/api/public/lastfm/$handle'
     | '/api/public/mastodon/servers'
     | '/api/public/mastodon/start'
@@ -4439,6 +4461,8 @@ export interface FileRouteTypes {
     | '/api_/public/cron/sync-socials'
     | '/api_/public/identity/didit-webhook'
     | '/api_/public/identity/w-callback'
+    | '/api_/public/ingest/grid'
+    | '/api_/public/ingest/omni'
     | '/api_/public/lastfm/$handle'
     | '/api_/public/mastodon/servers'
     | '/api_/public/mastodon/start'
@@ -4658,6 +4682,8 @@ export interface RootRouteChildren {
   ApiPublicCronSyncSocialsRoute: typeof ApiPublicCronSyncSocialsRoute
   ApiPublicIdentityDiditWebhookRoute: typeof ApiPublicIdentityDiditWebhookRoute
   ApiPublicIdentityWCallbackRoute: typeof ApiPublicIdentityWCallbackRoute
+  ApiPublicIngestGridRoute: typeof ApiPublicIngestGridRoute
+  ApiPublicIngestOmniRoute: typeof ApiPublicIngestOmniRoute
   ApiPublicLastfmHandleRoute: typeof ApiPublicLastfmHandleRoute
   ApiPublicMastodonServersRoute: typeof ApiPublicMastodonServersRoute
   ApiPublicMastodonStartRoute: typeof ApiPublicMastodonStartRoute
@@ -6933,6 +6959,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIdentityWCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api_/public/ingest/grid': {
+      id: '/api_/public/ingest/grid'
+      path: '/api/public/ingest/grid'
+      fullPath: '/api/public/ingest/grid'
+      preLoaderRoute: typeof ApiPublicIngestGridRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api_/public/ingest/omni': {
+      id: '/api_/public/ingest/omni'
+      path: '/api/public/ingest/omni'
+      fullPath: '/api/public/ingest/omni'
+      preLoaderRoute: typeof ApiPublicIngestOmniRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api_/public/lastfm/$handle': {
       id: '/api_/public/lastfm/$handle'
       path: '/api/public/lastfm/$handle'
@@ -7991,6 +8031,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronSyncSocialsRoute: ApiPublicCronSyncSocialsRoute,
   ApiPublicIdentityDiditWebhookRoute: ApiPublicIdentityDiditWebhookRoute,
   ApiPublicIdentityWCallbackRoute: ApiPublicIdentityWCallbackRoute,
+  ApiPublicIngestGridRoute: ApiPublicIngestGridRoute,
+  ApiPublicIngestOmniRoute: ApiPublicIngestOmniRoute,
   ApiPublicLastfmHandleRoute: ApiPublicLastfmHandleRoute,
   ApiPublicMastodonServersRoute: ApiPublicMastodonServersRoute,
   ApiPublicMastodonStartRoute: ApiPublicMastodonStartRoute,
