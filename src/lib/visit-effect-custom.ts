@@ -1,3 +1,4 @@
+import { runGpuVisitEffect } from "./visit-fx/run-gpu";
 /**
  * Eigen "Pagina bezoek effect": tot 4 emoji's met duur, hoeveelheid,
  * op-/afbouw, richting en wat er onderaan gebeurt. Alleen DOM + Web Animations.
@@ -83,7 +84,7 @@ type P = { x: number; y: number; vx: number; vy: number; size: number; rot: numb
  * Canvas-engine: één <canvas> overlay en één requestAnimationFrame-lus.
  * Geen DOM-node per deeltje, dus vlot op gsm, ook bij 200 deeltjes.
  */
-export function runCustomVisitEffect(
+function runCanvasVisitEffect(
   cfg: VisitEffectCustom,
   options?: { force?: boolean; container?: HTMLElement | null },
 ): () => void {
@@ -204,4 +205,23 @@ export function runCustomVisitEffect(
   };
   raf = requestAnimationFrame(tick);
   return cleanup;
+}
+
+/** GPU + worker eerst; canvas 2D alleen als terugval. */
+export function runCustomVisitEffect(
+  cfg: VisitEffectCustom,
+  options?: { force?: boolean; container?: HTMLElement | null },
+): () => void {
+  if (typeof document === "undefined") return () => {};
+  if (!options?.force && prefersReducedMotion()) return () => {};
+  const c = normalizeVisitCustom(cfg);
+  const total = c.duration * 1000;
+  try {
+    const stop = runGpuVisitEffect({
+      emojis: c.emojis.length ? c.emojis : ["✨"], amount: c.amount, direction: c.direction, fade: c.fade,
+      floorMode: c.floor, rampInMs: rampMs(c.rampIn, total), rampOutMs: rampMs(c.rampOut, total), totalMs: total,
+    }, options?.container ?? null);
+    if (stop) return stop;
+  } catch { /* terugval */ }
+  return runCanvasVisitEffect(cfg, { ...options, force: true });
 }
