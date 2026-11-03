@@ -10,6 +10,8 @@ beforeAll(async()=>{
  create function public.rout_current_user_id() returns uuid language sql as $$select nullif(current_setting('rout.current_user_id',true),'')::uuid$$;
  create function public.rout_qa_owner(h text,s text) returns table(owner_id uuid) language sql as $$select '${owner}'::uuid where h='public'$$;`);
  await db.exec(readFileSync("db/0185_ephemeral_presence.sql","utf8"));
+ await db.exec("create table public.user_integrations(user_id uuid,provider text,connection_status text);grant select on public.user_integrations to rout_app;");
+ await db.exec(readFileSync("db/0186_presence_broadcast.sql","utf8"));
 },30000);
 afterAll(()=>db.close());
 it("database defaults are exactly 24 hours and cannot be extended by update",async()=>{
@@ -42,5 +44,19 @@ it("another runtime user cannot read or modify private status rows",async()=>{
  await db.query("select set_config('rout.current_user_id',$1,true)",["22222222-2222-4222-8222-222222222222"]);
  expect((await db.query("select * from public.ephemeral_statuses")).rows).toEqual([]);
  expect((await db.query("delete from public.ephemeral_statuses returning id")).rows).toEqual([]);
+ }finally{await db.exec("rollback");}
+});
+it("status insert transaction creates one job for each connected open-network broadcast",async()=>{
+ await db.exec("begin");try{
+ await db.query("insert into public.user_integrations values($1,'omnicast_mastodon','connected'),($1,'omnicast_telegram','disconnected'),($1,'instagram','connected')",[owner]);
+ await db.query("insert into public.ephemeral_statuses(user_id,space,status_type,content_payload) values($1,'alias','micro_text',$2)",[owner,{text:"Live update"}]);
+ expect((await db.query("select provider,payload from public.presence_broadcast_jobs")).rows).toEqual([{provider:"omnicast_mastodon",payload:{text:"Live update"}}]);
+ }finally{await db.exec("rollback");}
+});
+it("quarantined Q&A replies never create background broadcasts",async()=>{
+ await db.exec("begin");try{
+ await db.query("insert into public.user_integrations values($1,'omnicast_mastodon','connected')",[owner]);
+ await db.query("insert into public.profile_questions(id,owner_id,space,body,answer,published,is_quarantined) values($1,$1,'alias','Private','Reply',false,true)",[owner]);
+ await db.exec("update public.profile_questions set published=true");expect((await db.query("select id from public.presence_broadcast_jobs")).rows).toEqual([]);
  }finally{await db.exec("rollback");}
 });
