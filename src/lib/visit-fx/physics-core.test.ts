@@ -22,3 +22,11 @@ describe("visit physics", () => {
     expect(p.squash).toBeGreaterThan(0.4); run(w, 20); expect(p.dead).toBe(true);
   });
 });
+describe("absolute world camera", () => {
+  it("lands on the page floor, not the viewport, and ignores scroll", () => {
+    const w = new VisitWorld({ ...base, floorMode: "splat", cameraY: 500, floor: 2000, pageHeight: 2000 });
+    run(w, 1); const p = w.ps[0]; expect(p.y).toBeLessThan(500);
+    while (!p.resting) w.step(16);
+    expect(Math.round(p.y + p.r)).toBe(2000);
+  });
+});

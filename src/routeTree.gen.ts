@@ -120,6 +120,7 @@ import { Route as DevEmailsRouteImport } from './routes/dev.emails'
 import { Route as DevGetStartedRouteImport } from './routes/dev.get-started'
 import { Route as DevIdentityRouteImport } from './routes/dev.identity'
 import { Route as DevIdentityOidcRouteImport } from './routes/dev.identity-oidc'
+import { Route as DevVisitFxRouteImport } from './routes/dev.visit-fx'
 import { Route as DevWebhooksRouteImport } from './routes/dev.webhooks'
 import { Route as DeveloperAiMcpRouteImport } from './routes/developer.ai-mcp'
 import { Route as DeveloperCredentialsRouteImport } from './routes/developer.credentials'
@@ -931,6 +932,11 @@ const DevIdentityRoute = DevIdentityRouteImport.update({
 const DevIdentityOidcRoute = DevIdentityOidcRouteImport.update({
   id: '/identity-oidc',
   path: '/identity-oidc',
+  getParentRoute: () => DevRoute,
+} as any)
+const DevVisitFxRoute = DevVisitFxRouteImport.update({
+  id: '/visit-fx',
+  path: '/visit-fx',
   getParentRoute: () => DevRoute,
 } as any)
 const DevWebhooksRoute = DevWebhooksRouteImport.update({
@@ -2420,6 +2426,7 @@ export interface FileRoutesByFullPath {
   '/dev/get-started': typeof DevGetStartedRoute
   '/dev/identity': typeof DevIdentityRoute
   '/dev/identity-oidc': typeof DevIdentityOidcRoute
+  '/dev/visit-fx': typeof DevVisitFxRoute
   '/dev/webhooks': typeof DevWebhooksRoute
   '/developer/ai-mcp': typeof DeveloperAiMcpRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
@@ -2773,6 +2780,7 @@ export interface FileRoutesByTo {
   '/dev/get-started': typeof DevGetStartedRoute
   '/dev/identity': typeof DevIdentityRoute
   '/dev/identity-oidc': typeof DevIdentityOidcRoute
+  '/dev/visit-fx': typeof DevVisitFxRoute
   '/dev/webhooks': typeof DevWebhooksRoute
   '/developer/ai-mcp': typeof DeveloperAiMcpRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
@@ -3139,6 +3147,7 @@ export interface FileRoutesById {
   '/dev/get-started': typeof DevGetStartedRoute
   '/dev/identity': typeof DevIdentityRoute
   '/dev/identity-oidc': typeof DevIdentityOidcRoute
+  '/dev/visit-fx': typeof DevVisitFxRoute
   '/dev/webhooks': typeof DevWebhooksRoute
   '/developer/ai-mcp': typeof DeveloperAiMcpRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
@@ -3508,6 +3517,7 @@ export interface FileRouteTypes {
     | '/dev/get-started'
     | '/dev/identity'
     | '/dev/identity-oidc'
+    | '/dev/visit-fx'
     | '/dev/webhooks'
     | '/developer/ai-mcp'
     | '/developer/credentials'
@@ -3861,6 +3871,7 @@ export interface FileRouteTypes {
     | '/dev/get-started'
     | '/dev/identity'
     | '/dev/identity-oidc'
+    | '/dev/visit-fx'
     | '/dev/webhooks'
     | '/developer/ai-mcp'
     | '/developer/credentials'
@@ -4226,6 +4237,7 @@ export interface FileRouteTypes {
     | '/dev/get-started'
     | '/dev/identity'
     | '/dev/identity-oidc'
+    | '/dev/visit-fx'
     | '/dev/webhooks'
     | '/developer/ai-mcp'
     | '/developer/credentials'
@@ -5461,6 +5473,13 @@ declare module '@tanstack/react-router' {
       path: '/identity-oidc'
       fullPath: '/dev/identity-oidc'
       preLoaderRoute: typeof DevIdentityOidcRouteImport
+      parentRoute: typeof DevRoute
+    }
+    '/dev/visit-fx': {
+      id: '/dev/visit-fx'
+      path: '/visit-fx'
+      fullPath: '/dev/visit-fx'
+      preLoaderRoute: typeof DevVisitFxRouteImport
       parentRoute: typeof DevRoute
     }
     '/dev/webhooks': {
@@ -7526,6 +7545,7 @@ interface DevRouteChildren {
   DevGetStartedRoute: typeof DevGetStartedRoute
   DevIdentityRoute: typeof DevIdentityRoute
   DevIdentityOidcRoute: typeof DevIdentityOidcRoute
+  DevVisitFxRoute: typeof DevVisitFxRoute
   DevWebhooksRoute: typeof DevWebhooksRoute
   DevIndexRoute: typeof DevIndexRoute
 }
@@ -7539,6 +7559,7 @@ const DevRouteChildren: DevRouteChildren = {
   DevGetStartedRoute: DevGetStartedRoute,
   DevIdentityRoute: DevIdentityRoute,
   DevIdentityOidcRoute: DevIdentityOidcRoute,
+  DevVisitFxRoute: DevVisitFxRoute,
   DevWebhooksRoute: DevWebhooksRoute,
   DevIndexRoute: DevIndexRoute,
 }

@@ -10,10 +10,11 @@ type P = { x: number; y: number; px: number; py: number; r: number; rot: number;
  */
 export class VisitWorld {
   cfg: WorkerInit; ps: P[] = []; spawned = 0; t = 0; out: Float32Array;
+  /** Spawn-oorsprong in de absolute wereld; verandert nooit door scrollen. */
   cam = 0;
   constructor(cfg: WorkerInit) { this.cfg = cfg; this.cam = cfg.cameraY ?? 0; this.out = new Float32Array(cfg.amount * STRIDE); }
-  setCamera(y: number) { this.cam = y; }
-  setBodies(b: Body[], w: number, h: number, floor: number) { Object.assign(this.cfg, { bodies: b, width: w, height: h, floor }); }
+  private get page() { return this.cfg.pageHeight ?? this.cam + this.cfg.height; }
+  setBodies(b: Body[], w: number, h: number, floor: number, pageHeight?: number) { Object.assign(this.cfg, { bodies: b, width: w, height: h, floor, pageHeight }); }
   private rand(a: number, b: number) { return a + Math.random() * (b - a); }
   private spawn() {
     const { width: W, height: H, direction } = this.cfg;
@@ -44,7 +45,8 @@ export class VisitWorld {
     const due = c.rampInMs <= 0 ? c.amount : Math.min(c.amount, Math.ceil((this.t / c.rampInMs) * c.amount));
     while (this.spawned < due) this.spawn();
     const g = c.direction === "up" ? -0.12 : c.direction === "burst" ? 0.08 : 0.22;
-    const floor = this.cam + c.floor, top = this.cam;
+    // Absolute vloer: zonder pageHeight (tests/container) is floor relatief aan de oorsprong.
+    const floor = c.pageHeight != null ? c.floor : this.cam + c.floor, top = this.cam;
     const collide = c.direction === "down" && !c.fade && c.floorMode !== "through";
     const outStart = c.totalMs - c.rampOutMs;
     const globalA = this.t < outStart || c.rampOutMs <= 0 ? 1 : Math.max(0, 1 - (this.t - outStart) / c.rampOutMs);
@@ -81,7 +83,7 @@ export class VisitWorld {
           : (p.y - top) / c.height;
         p.alpha = 1 - Math.max(0, prog);
       }
-      if (p.alpha <= 0 || p.y > top + c.height + p.r * 2 || p.y < top - p.r * 4 || p.x < -c.width || p.x > c.width * 2) { p.dead = true; continue; }
+      if (p.alpha <= 0 || p.y > Math.max(top + c.height, this.page) + p.r * 2 || p.y < top - c.height - p.r * 4 || p.x < -c.width || p.x > c.width * 2) { p.dead = true; continue; }
       const o = n * STRIDE;
       this.out[o] = p.x; this.out[o + 1] = p.y; this.out[o + 2] = p.resting ? 0 : p.rot;
       this.out[o + 3] = p.squash; this.out[o + 4] = p.alpha * globalA; this.out[o + 5] = p.tex; this.out[o + 6] = p.r * 2;

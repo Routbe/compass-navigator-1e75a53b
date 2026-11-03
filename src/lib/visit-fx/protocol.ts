@@ -9,12 +9,13 @@ export type WorkerInit = {
   fade: boolean; floorMode: "through" | "vanish" | "bounce" | "splat";
   rampInMs: number; rampOutMs: number; totalMs: number;
   bodies: Body[];
-  /** Camera Y (scrollY). Lichamen staan in paginacoördinaten; floor is relatief aan het scherm. */
+  /** Absolute wereld (paginacoördinaten). cameraY = scrollY bij start, alleen als spawn-oorsprong.
+   *  floor en pageHeight zijn absolute paginacoördinaten; scrollen wordt nooit naar de worker gestuurd. */
   cameraY?: number;
+  pageHeight?: number;
 };
 export type WorkerMsg =
   | WorkerInit
-  | { type: "bodies"; bodies: Body[]; width: number; height: number; floor: number }
-  | { type: "camera"; y: number }
+  | { type: "bodies"; bodies: Body[]; width: number; height: number; floor: number; pageHeight: number }
   | { type: "stop" };
 export type FrameMsg = { type: "frame"; data: Float32Array; count: number } | { type: "done" };
