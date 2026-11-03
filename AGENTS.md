@@ -20,3 +20,4 @@
 - Native story video is generated locally before the share click using the procedural canvas and a text composite; native share receives the prepared file synchronously. Why: a three-second recording cannot preserve transient mobile share activation.
 - Omnicast credentials use sealed user_integrations rows with explicit per-canvas consent; queue and delivery recheck rout_qa_owner visibility and source expiry. Why: no plaintext credentials, cross-canvas consent, or private/retracted content broadcasts.
 - Omni presentation metadata stays additive on revisioned profile blocks; public grids retain their own bento layout without changing unrelated widgets. Why: unified content must retain identities, schedules, publication state and existing rich widgets.
+- Visit effects run physics in a Web Worker (src/lib/visit-fx) and render via native WebGL with DOM bodies as colliders; canvas 2D is only the fallback. Why: keep the main thread free on mobile.
