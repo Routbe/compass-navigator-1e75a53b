@@ -646,5 +646,18 @@
   "studio.grid.media.invalid": "Gebruik een toegestane https-afbeelding of eigen upload.",
   "studio.grid.media.preview": "Voorbeeld",
   "studio.grid.media.caption": "Titel of onderschrift (optioneel)",
-  "studio.grid.media.alt": "Alt-tekst (optioneel)"
+  "studio.grid.media.alt": "Alt-tekst (optioneel)",
+  "presence.update": "Status update",
+  "presence.write": "Schrijf een tekst",
+  "presence.grid": "Deel profielcontent",
+  "presence.sent": "Status geplaatst voor 24 uur",
+  "presence.pending": "Niet bevestigd. Je tekst blijft lokaal bewaard; probeer opnieuw.",
+  "presence.encoding": "Video voorbereiden",
+  "presence.shareFailed": "Delen mislukt",
+  "presence.share": "Deel naar Story",
+  "presence.download": "Video downloaden",
+  "presence.noGrid": "Publiceer eerst een link of gridkaart op je profiel.",
+  "presence.publish": "Plaats voor 24 uur",
+  "presence.retry": "Opnieuw proberen",
+  "presence.discard": "Lokaal concept verwijderen"
 }

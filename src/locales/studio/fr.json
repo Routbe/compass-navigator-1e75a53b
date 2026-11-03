@@ -646,5 +646,18 @@
   "studio.grid.media.invalid": "Utilisez une image https autorisée ou votre fichier.",
   "studio.grid.media.preview": "Aperçu",
   "studio.grid.media.caption": "Titre ou légende (facultatif)",
-  "studio.grid.media.alt": "Texte alternatif (facultatif)"
+  "studio.grid.media.alt": "Texte alternatif (facultatif)",
+  "presence.update": "Mise à jour du statut",
+  "presence.write": "Écrire un texte",
+  "presence.grid": "Partager du contenu",
+  "presence.sent": "Statut publié pour 24 heures",
+  "presence.pending": "Non confirmé. Texte conservé localement ; réessayez.",
+  "presence.encoding": "Préparation de la vidéo",
+  "presence.shareFailed": "Échec du partage",
+  "presence.share": "Partager en Story",
+  "presence.download": "Télécharger la vidéo",
+  "presence.noGrid": "Publiez d’abord un lien ou une carte sur votre profil.",
+  "presence.publish": "Publier pour 24 heures",
+  "presence.retry": "Réessayer",
+  "presence.discard": "Supprimer le brouillon local"
 }
