@@ -8,19 +8,19 @@ export async function saveBroadcast(owner:string,raw:BroadcastConfig){
  const data=broadcastInput.parse(raw);
  if(data.url){const u=new URL(data.url);if(u.protocol!=="https:"||u.username||u.password||u.port||!await assertPublicHost(u.hostname))throw new Error("unsafe_destination");}
  const provider=broadcastProvider(data.provider);const sealed=await seal(JSON.stringify(data),`omnicast:${owner}:${provider}`);
- await sql`insert into public.user_integrations(user_id,provider,handle,audience,visible,access_token_enc,access_token_iv,connection_status)
- values(${owner},${provider},${data.handle??data.provider},'both',false,${sealed.ciphertext},${sealed.iv},'connected')
- on conflict(user_id,provider) do update set access_token_enc=excluded.access_token_enc,access_token_iv=excluded.access_token_iv,connection_status='connected',visible=false`;
+ await sql`insert into public.user_integrations(user_id,provider,handle,audience,visible,show_on_verified,show_on_alias,include_in_reach,status_json,access_token_enc,access_token_iv,connection_status)
+ values(${owner},${provider},${data.handle??data.provider},'both',false,false,false,false,${JSON.stringify({broadcastSpaces:data.spaces})}::jsonb,${sealed.ciphertext},${sealed.iv},'connected')
+ on conflict(user_id,provider) do update set status_json=excluded.status_json,access_token_enc=excluded.access_token_enc,access_token_iv=excluded.access_token_iv,connection_status='connected',visible=false,show_on_verified=false,show_on_alias=false,include_in_reach=false`;
 }
 export async function myBroadcasts(owner:string){
- const rows=await sql`select provider,connection_status from public.user_integrations where user_id=${owner} and provider like 'omnicast_%'` as Record<string,unknown>[];
+ const rows=await sql`select provider,connection_status from public.user_integrations where user_id=${owner} and provider in ('omnicast_mastodon','omnicast_bluesky','omnicast_telegram','omnicast_webhook')` as Record<string,unknown>[];
  return {ready:encryptionConfigured(),providers:rows.map(r=>({provider:String(r["provider"]).replace("omnicast_",""),connected:r["connection_status"]==="connected"}))};
 }
-export async function disconnectBroadcast(owner:string,provider:string){await sql`delete from public.user_integrations where user_id=${owner} and provider=${broadcastProvider(provider)}`;}
+export async function disconnectBroadcast(owner:string,provider:string){await sql`delete from public.user_integrations where user_id=${owner} and provider=${broadcastProvider(provider)}`;await sql`delete from public.presence_broadcast_jobs where user_id=${owner} and provider=${broadcastProvider(provider)} and delivered_at is null`;}
 export async function enqueueBroadcast(owner:string,eventId:string,space:string,text:string){
  await sql`insert into public.presence_broadcast_jobs(user_id,event_id,space,provider,payload)
  select user_id,${eventId},${space},provider,${JSON.stringify({text:text.slice(0,4000)})}::jsonb from public.user_integrations
- where user_id=${owner} and provider like 'omnicast_%' and connection_status='connected'
+ where user_id=${owner} and provider in ('omnicast_mastodon','omnicast_bluesky','omnicast_telegram','omnicast_webhook') and connection_status='connected'
  on conflict(user_id,event_id,provider) do nothing`;
  const task=deliverBroadcasts(owner).catch(e=>console.error("[omnicast] delivery failed",e instanceof Error?e.message:"error"));
  if(!registerBackgroundTask(task))await task;
@@ -45,9 +45,12 @@ export async function deliverBroadcasts(owner:string){
  and attempts<5 and next_attempt_at<=now() and (claimed_until is null or claimed_until<now()) order by created_at limit 10 for update skip locked)
  returning *` as Record<string,unknown>[];
  for(const row of rows){
+  const allowed=await sql`select public.rout_broadcast_event_allowed(${owner},${String(row['event_id'])},${String(row['space'])}) as allowed` as Record<string,unknown>[];
+  if(allowed[0]?.['allowed']!==true){await sql`update public.presence_broadcast_jobs set attempts=5,claimed_until=null,last_status=410 where id=${String(row['id'])}`;continue;}
   const creds=await sql`select access_token_enc,access_token_iv from public.user_integrations where user_id=${owner} and provider=${String(row["provider"])} and connection_status='connected' limit 1` as Record<string,unknown>[];
-  const cred=creds[0];if(!cred)continue;let status=0;
+  const cred=creds[0];if(!cred){await sql`update public.presence_broadcast_jobs set attempts=5,claimed_until=null,last_status=410 where id=${String(row['id'])}`;continue;}let status=0;
   try{const config=broadcastInput.parse(JSON.parse(await open(String(cred["access_token_enc"]),String(cred["access_token_iv"]),`omnicast:${owner}:${String(row["provider"])}`)));
+   if(!config.spaces.includes(String(row['space']) as 'root'|'alias'))throw new Error('space_not_authorized');
    const payload=row["payload"] as {text:string};status=await send(config,payload.text,String(row["id"]));
   }catch{status=0;}
   // Ambiguous timeouts and providers without idempotency are not retried automatically.
