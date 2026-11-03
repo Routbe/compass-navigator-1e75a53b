@@ -29,7 +29,18 @@
     "application_connected": false
   },
   "verification": {
-    "status": "pending"
+    "status": "public_flows_verified",
+    "tests_passed": 17,
+    "build": "OK",
+    "desktop_phone": [
+      "homepage",
+      "menu open/Escape close",
+      "ecosystem scrolling",
+      "command /developers",
+      "claim identity destination"
+    ],
+    "authenticated_flows": "blocked by missing original account configuration",
+    "source_visual_comparison": "blocked by Vercel login"
   },
   "cutover": {
     "status": "not_requested"
