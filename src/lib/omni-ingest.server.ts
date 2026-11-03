@@ -115,10 +115,7 @@ const errorCode = (e: unknown) => {
 export async function processOmniJob(jobId: string, userId: string): Promise<void> {
   const claimed = (await sql`update public.omni_ingest_jobs set status='processing', attempts=attempts+1, updated_at=now()
     where id=${jobId} and user_id=${userId} and status in ('queued','failed') and attempts < 3
-    returning source_url, title_override, media_hint`.catch(async () =>
-    sql`update public.omni_ingest_jobs set status='processing', attempts=attempts+1, updated_at=now()
-      where id=${jobId} and user_id=${userId} and status in ('queued','failed') and attempts < 3
-      returning source_url, title_override`)) as { source_url: string; title_override: string | null; media_hint?: string | null }[];
+    returning source_url, title_override, media_hint`) as { source_url: string; title_override: string | null; media_hint?: string | null }[];
   const job = claimed[0];
   if (!job) return;
   try {

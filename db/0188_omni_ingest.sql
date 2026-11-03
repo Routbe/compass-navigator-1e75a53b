@@ -21,6 +21,7 @@ create table public.omni_ingest_jobs (
   source text not null check (source in ('studio','webhook')),
   source_url text not null check (source_url ~ '^https://' and char_length(source_url) <= 2000),
   title_override text check (char_length(title_override) <= 150),
+  media_hint text check (media_hint ~ '^https://' and char_length(media_hint) <= 2000),
   status public.omni_job_status not null default 'queued',
   content_type public.omni_content_type,
   title text check (char_length(title) <= 150),
