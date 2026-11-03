@@ -1,3 +1,4 @@
+import { runCustomVisitEffect, normalizeVisitCustom } from "@/lib/visit-effect-custom";
 import { glassSurfaceStyle, resolveComponentDesign, resolveScopedTokens, scopeOfBlockKind } from "@/lib/theme-engine";
 import { LocaleDropdown } from "@/components/LocaleDropdown";
 import { profileSurface } from "@/lib/profile-surface";
@@ -304,17 +305,28 @@ export function ProfileView({
   // Entree-effect: exact één keer bij het betreden van het profiel, en nooit
   // wanneer het besturingssysteem minder beweging vraagt. Het effect speelt
   // binnen deze pagina zelf, dus ook netjes binnen de Studio-preview.
+  const customFx = prefs.visitEffectCustom;
+  const customKey = JSON.stringify(customFx);
   useEffect(() => {
-    if (prefs.visitEffect === "none" || !fxOn) return;
+    if (!fxOn) return;
+    if (customFx.enabled) return runCustomVisitEffect(customFx, { container: mainRef.current });
+    if (prefs.visitEffect === "none") return;
     const stop = runVisitEffect(prefs.visitEffect, { container: mainRef.current });
     return stop;
-  }, [prefs.visitEffect, fxOn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefs.visitEffect, fxOn, customKey]);
 
   // "Test effect" in de Studio: speel het af in deze preview, niet over de
   // volledige studiopagina.
   useEffect(() => {
     const onTest = (event: Event) => {
-      const detail = (event as CustomEvent<{ effect?: string; handled?: boolean }>).detail;
+      const detail = (event as CustomEvent<{ effect?: string; handled?: boolean; custom?: unknown }>).detail;
+      if (detail?.custom) {
+        detail.handled = true;
+        stopTestRef.current?.();
+        stopTestRef.current = runCustomVisitEffect(normalizeVisitCustom(detail.custom), { force: true, container: mainRef.current });
+        return;
+      }
       const effect = isVisitEffect(detail?.effect) ? detail.effect : prefs.visitEffect;
       if (effect === "none") return;
       if (detail) detail.handled = true;

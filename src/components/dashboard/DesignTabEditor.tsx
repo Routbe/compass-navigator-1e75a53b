@@ -304,7 +304,7 @@ export function DesignPresetSection({
           <SlidersHorizontal className="h-4 w-4" />
         </button>
       </div>
-      <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+      {!prefs.backgroundCustom && <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
         {ROUT_PRESETS.map((p) => {
           const pt = themeOf(p.themeId);
           const design = p.design as Partial<ProfileDisplayPrefs>;
@@ -326,7 +326,7 @@ export function DesignPresetSection({
             />
           );
         })}
-      </div>
+      </div>}
     </section>
   );
 }

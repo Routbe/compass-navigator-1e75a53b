@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, ShieldCheck, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QA_PROMPT_CUSTOM_MAX, QA_PROMPT_KEYS, promptHeadline, type QaPromptKey } from "@/lib/qa/prompts";
@@ -13,6 +12,7 @@ import { qaPaths, type QaSpace } from "@/components/qa/useQaPublic";
 import { cn } from "@/lib/utils";
 import type { ProfileDisplayPrefs } from "@/lib/profile-display";
 import { StudioSectionIcon } from "./StudioSectionIcon";
+import { StudioToggleCard } from "./StudioToggleCard";
 
 export type QaPrefs = Pick<ProfileDisplayPrefs, "questionsEnabled" | "qaPrompt" | "qaPromptCustom" | "qaOnHub" | "qaPage" | "qaAudience" | "qaIntroSeen">;
 
@@ -38,27 +38,18 @@ export function QuestionsInboxAccordion({ space, handle, displayName, avatarUrl,
   const keys: QaPromptKey[] = [...QA_PROMPT_KEYS, "custom"];
   const shareTarget = useMemo(() => (shareOpen ? { kind: "prompt" as const, prompt: headline } : null), [shareOpen, headline]);
 
-  const row = (label: string, help: string, checked: boolean, onChange: (v: boolean) => void, disabled = false) => (
-    <label className={cn("flex items-center justify-between gap-3 rounded-xl border border-border p-3 text-sm", disabled && "opacity-60")}>
-      <span className="min-w-0">
-        <span className="block font-medium">{label}</span>
-        <span className="block text-xs text-muted-foreground">{help}</span>
-      </span>
-      <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} aria-label={label} />
-    </label>
-  );
 
   return (
-    <details className="border-t border-border pt-4" id="studio-qa">
-      <summary className="flex min-h-11 cursor-pointer items-center gap-2">
-        <StudioSectionIcon kind="questions" />
-        <span className="min-w-0 flex-1 text-left">
-          <span className="block text-sm font-medium">{t("pages.qa.inbox.title")}</span>
-          <span className="block truncate text-xs text-muted-foreground">{headline}</span>
-        </span>
-      </summary>
-      <div className="space-y-3 py-3">
-        {row(t("pages.qa.settings.accepting"), t("pages.qa.settings.acceptingHelp"), prefs.questionsEnabled && prefs.qaOnHub, (v) => { if (v && !prefs.qaIntroSeen) setIntroOpen(true); onPref("questionsEnabled", v || prefs.qaPage); onPref("qaOnHub", v); })}
+    <>
+    <StudioToggleCard
+      id="studio-qa"
+      icon={<StudioSectionIcon kind="questions" />}
+      title={t("pages.qa.inbox.title")}
+      subtitle={headline}
+      checked={prefs.questionsEnabled && prefs.qaOnHub}
+      onCheckedChange={(v) => { if (v && !prefs.qaIntroSeen) setIntroOpen(true); onPref("questionsEnabled", v || prefs.qaPage); onPref("qaOnHub", v); }}
+    >
+      <div className="space-y-3">
         <label className="block space-y-2 text-sm">
           <span>{t("pages.qa.settings.audience")}</span>
           <Select value={prefs.qaAudience} onValueChange={(v) => onPref("qaAudience", v as QaPrefs["qaAudience"])}>
@@ -143,6 +134,7 @@ export function QuestionsInboxAccordion({ space, handle, displayName, avatarUrl,
           avatarUrl={avatarUrl}
         />
       )}
-    </details>
+    </StudioToggleCard>
+    </>
   );
 }

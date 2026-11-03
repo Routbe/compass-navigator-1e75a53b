@@ -6,8 +6,8 @@ import { Pin, PinOff, Trash2 } from "lucide-react";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { deleteGuestbookNote, getMyGuestbook, pinGuestbookNote } from "@/lib/guestbook.functions";
 import { GUESTBOOK_PIN_LIMIT } from "@/lib/guestbook-rules";
-import { Switch } from "@/components/ui/switch";
 import { StudioSectionIcon } from "./StudioSectionIcon";
+import { StudioToggleCard } from "./StudioToggleCard";
 import { Button } from "@/components/ui/button";
 
 /** Studio: all received notes; pin the best ones to the public Prikbord. */
@@ -23,19 +23,14 @@ export function GuestbookAccordion({ enabled, onEnabledChange }: { enabled: bool
   const refresh = () => qc.invalidateQueries({ queryKey: ["my-guestbook"] });
 
   return (
-    <details className="rounded-xl border border-border bg-card p-4">
-      <summary className="flex min-h-11 cursor-pointer items-center gap-2">
-        <StudioSectionIcon kind="guestbook" />
-        <span className="min-w-0 flex-1 text-left">
-          <span className="block text-sm font-medium">{t("studio.guestbook.title")}</span>
-          <span className="block text-xs text-muted-foreground">{t("studio.guestbook.counts", { total: notes.length, pinned: pinnedCount, limit: GUESTBOOK_PIN_LIMIT })}</span>
-        </span>
-      </summary>
-      <div className="space-y-2 py-3">
-        <div className="flex min-h-11 items-center justify-between gap-3">
-          <span className="text-sm">{t("studio.guestbook.onProfile")}</span>
-          <Switch checked={enabled} onCheckedChange={onEnabledChange} aria-label={t("studio.guestbook.onProfile")} />
-        </div>
+    <StudioToggleCard
+      icon={<StudioSectionIcon kind="guestbook" />}
+      title={t("studio.guestbook.title")}
+      subtitle={t("studio.guestbook.counts", { total: notes.length, pinned: pinnedCount, limit: GUESTBOOK_PIN_LIMIT })}
+      checked={enabled}
+      onCheckedChange={onEnabledChange}
+    >
+      <div className="space-y-2">
         {notes.length === 0 && <p className="text-xs text-muted-foreground">{t("studio.guestbook.empty")}</p>}
         {notes.map((n) => (
           <div key={n.id} className={`flex items-start gap-2 rounded-xl border p-3 ${n.pinned ? "border-primary/50 bg-primary/5" : "border-border"}`}>
@@ -71,6 +66,6 @@ export function GuestbookAccordion({ enabled, onEnabledChange }: { enabled: bool
           </div>
         ))}
       </div>
-    </details>
+    </StudioToggleCard>
   );
 }
