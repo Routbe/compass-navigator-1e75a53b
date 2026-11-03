@@ -234,7 +234,7 @@ export function runCustomVisitEffect(
   const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
   let idle = 0, timer: ReturnType<typeof setTimeout> | null = null;
   if (options?.immediate) void start();
-  else if (w.requestIdleCallback) idle = w.requestIdleCallback(() => { timer = setTimeout(start, 300); }, { timeout: 1500 });
+  else if (w.requestIdleCallback) idle = w.requestIdleCallback(() => { timer = setTimeout(start, 300); }, { timeout: 700 });
   else timer = setTimeout(start, 500);
   return () => {
     cancelled = true;
