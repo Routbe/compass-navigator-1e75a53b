@@ -659,5 +659,13 @@
   "presence.noGrid": "Publish a link or grid card on your profile first.",
   "presence.publish": "Post for 24 hours",
   "presence.retry": "Retry",
-  "presence.discard": "Discard local draft"
+  "presence.discard": "Discard local draft",
+  "presence.local": "Local — not published yet",
+  "presence.connected": "Connection saved",
+  "presence.connectFailed": "Connection failed; check address and credential",
+  "presence.disconnect": "Disconnect",
+  "presence.encryptionMissing": "Secure credential storage is not configured.",
+  "presence.endpoint": "Destination URL",
+  "presence.credential": "API token / app password / webhook secret",
+  "presence.connect": "Connect"
 }

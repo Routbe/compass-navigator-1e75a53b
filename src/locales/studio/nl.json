@@ -659,5 +659,13 @@
   "presence.noGrid": "Publiceer eerst een link of gridkaart op je profiel.",
   "presence.publish": "Plaats voor 24 uur",
   "presence.retry": "Opnieuw proberen",
-  "presence.discard": "Lokaal concept verwijderen"
+  "presence.discard": "Lokaal concept verwijderen",
+  "presence.local": "Lokaal — nog niet gepubliceerd",
+  "presence.connected": "Koppeling opgeslagen",
+  "presence.connectFailed": "Koppelen mislukt; controleer adres en sleutel",
+  "presence.disconnect": "Ontkoppelen",
+  "presence.encryptionMissing": "Veilige sleutelopslag is nog niet ingesteld.",
+  "presence.endpoint": "Bestemmingsadres",
+  "presence.credential": "API-token / app-wachtwoord / webhooksecret",
+  "presence.connect": "Koppelen"
 }

@@ -659,5 +659,13 @@
   "presence.noGrid": "Zuerst einen Link oder eine Karte auf dem Profil veröffentlichen.",
   "presence.publish": "Für 24 Stunden posten",
   "presence.retry": "Erneut versuchen",
-  "presence.discard": "Lokalen Entwurf löschen"
+  "presence.discard": "Lokalen Entwurf löschen",
+  "presence.local": "Lokal — noch nicht veröffentlicht",
+  "presence.connected": "Verbindung gespeichert",
+  "presence.connectFailed": "Fehlgeschlagen; Adresse und Schlüssel prüfen",
+  "presence.disconnect": "Trennen",
+  "presence.encryptionMissing": "Sichere Schlüsselspeicherung nicht eingerichtet.",
+  "presence.endpoint": "Zieladresse",
+  "presence.credential": "API-Token / App-Passwort / Webhook-Secret",
+  "presence.connect": "Verbinden"
 }
