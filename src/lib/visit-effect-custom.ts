@@ -77,6 +77,12 @@ export function normalizeVisitCustom(raw: unknown): VisitEffectCustom {
 
 const rampMs = (r: VisitRamp, total: number) => (r === "instant" ? 0 : r === "fast" ? total * 0.12 : total * 0.35);
 
+type P = { x: number; y: number; vx: number; vy: number; size: number; rot: number; vr: number; e: string; born: number; alpha: number; landedAt: number; scaleY: number; dead: boolean };
+
+/**
+ * Canvas-engine: één <canvas> overlay en één requestAnimationFrame-lus.
+ * Geen DOM-node per deeltje, dus vlot op gsm, ook bij 200 deeltjes.
+ */
 export function runCustomVisitEffect(
   cfg: VisitEffectCustom,
   options?: { force?: boolean; container?: HTMLElement | null },
@@ -85,69 +91,117 @@ export function runCustomVisitEffect(
   if (!options?.force && prefersReducedMotion()) return () => {};
   const c = normalizeVisitCustom(cfg);
   const container = options?.container ?? null;
-  const root = document.createElement("div");
-  root.setAttribute("aria-hidden", "true");
-  root.style.cssText = container
-    ? "position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:60"
-    : "position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60;contain:strict";
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
+  canvas.style.cssText = container
+    ? "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:60"
+    : "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:60";
   if (container && getComputedStyle(container).position === "static") container.style.position = "relative";
-  (container ?? document.body).appendChild(root);
+  (container ?? document.body).appendChild(canvas);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) { canvas.remove(); return () => {}; }
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
   const box = container?.getBoundingClientRect();
   const W = box?.width || window.innerWidth;
   const H = box?.height || window.innerHeight;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.scale(dpr, dpr);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  // Bodem boven de veilige zone onderaan (env(safe-area-inset-bottom)).
+  const probe = document.createElement("div");
+  probe.style.cssText = "position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);visibility:hidden";
+  document.body.appendChild(probe);
+  const safe = container ? 0 : probe.getBoundingClientRect().height;
+  probe.remove();
+
   const total = c.duration * 1000;
   const inMs = rampMs(c.rampIn, total);
   const outMs = rampMs(c.rampOut, total);
   const r = (a: number, b: number) => a + Math.random() * (b - a);
+  const G = c.direction === "up" ? -0.00035 : c.direction === "burst" ? 0.0002 : 0.0006; // px/ms²
+  const parts: P[] = [];
+  let spawned = 0;
+  let raf = 0;
   let done = false;
-  const timers: number[] = [];
+  const t0 = performance.now();
+  let last = t0;
 
-  for (let i = 0; i < c.amount; i += 1) {
-    // Opbouw: deeltjes verschijnen gespreid over de opbouwtijd.
-    const delay = inMs * (i / c.amount);
-    const life = Math.max(600, total - delay - r(0, outMs * 0.6));
-    const el = document.createElement("span");
-    el.textContent = c.emojis[i % c.emojis.length] ?? "✨";
+  const spawn = (now: number) => {
     const size = r(18, 34);
-    el.style.cssText = `position:absolute;left:0;top:0;font-size:${size}px;line-height:1;will-change:transform,opacity;opacity:0`;
-    root.appendChild(el);
+    const p: P = { x: r(0, W), y: -size, vx: r(-0.03, 0.03), vy: r(0.05, 0.2), size, rot: 0, vr: r(-0.004, 0.004), e: c.emojis[spawned % c.emojis.length] ?? "✨", born: now, alpha: 1, landedAt: 0, scaleY: 1, dead: false };
+    if (c.direction === "up") { p.y = H + size; p.vy = r(-0.25, -0.1); }
+    else if (c.direction === "diagonal") { p.x = r(-W * 0.3, W * 0.7); p.vx = r(0.12, 0.22); }
+    else if (c.direction === "burst") { const a = r(0, Math.PI * 2), v = r(0.2, 0.6); p.x = W / 2; p.y = H / 2; p.vx = Math.cos(a) * v; p.vy = Math.sin(a) * v; }
+    parts.push(p);
+    spawned += 1;
+  };
 
-    let x0 = r(0, W), y0 = -40, x1 = x0 + r(-40, 40), y1 = H - size;
-    if (c.direction === "up") { y0 = H + 10; y1 = -40; }
-    else if (c.direction === "diagonal") { x0 = r(-W * 0.3, W * 0.7); x1 = x0 + W * 0.5; }
-    else if (c.direction === "burst") { x0 = W / 2; y0 = H / 2; const a = r(0, Math.PI * 2), d = r(W * 0.3, Math.max(W, H)); x1 = x0 + Math.cos(a) * d; y1 = y0 + Math.sin(a) * d; }
+  const floorY = H - safe;
+  const tick = (now: number) => {
+    if (done) return;
+    const dt = Math.min(48, now - last);
+    last = now;
+    const el = now - t0;
+    // Opbouw: deeltjes gespreid over de opbouwtijd.
+    const due = inMs === 0 ? c.amount : Math.min(c.amount, Math.ceil((el / inMs) * c.amount));
+    while (spawned < due) spawn(now);
+    // Afbouw: globale fade in de laatste fase.
+    const outStart = total - outMs;
+    const globalA = el < outStart || outMs === 0 ? 1 : Math.max(0, 1 - (el - outStart) / outMs);
 
-    const rot = r(-180, 180);
-    const endOpacity = c.fade ? 0 : 1;
-    const frames: Keyframe[] = [
-      { transform: `translate(${x0}px,${y0}px) rotate(0deg)`, opacity: 0, offset: 0 },
-      { transform: `translate(${x0 + (x1 - x0) * 0.05}px,${y0 + (y1 - y0) * 0.05}px)`, opacity: 1, offset: 0.05 },
-      { transform: `translate(${x1}px,${y1}px) rotate(${rot}deg)`, opacity: c.fade ? 0.05 : 1, offset: c.direction === "down" && !c.fade ? 0.75 : 1 },
-    ];
-    const falls = c.direction === "down" && !c.fade;
-    if (falls) {
-      const end = `translate(${x1}px,${y1}px) rotate(${rot}deg)`;
-      if (c.floor === "through") frames[2] = { transform: `translate(${x1}px,${H + 60}px) rotate(${rot}deg)`, opacity: 1, offset: 1 };
-      else if (c.floor === "vanish") frames.push({ transform: end, opacity: 1, offset: 0.9 }, { transform: end, opacity: 0, offset: 1 });
-      else if (c.floor === "bounce") frames.push(
-        { transform: `translate(${x1}px,${y1 - 60}px) rotate(${rot}deg)`, opacity: 1, offset: 0.84 },
-        { transform: end, offset: 0.92 },
-        { transform: `translate(${x1}px,${y1 - 18}px) rotate(${rot}deg)`, offset: 0.96 },
-        { transform: end, opacity: 0, offset: 1 },
-      );
-      else frames.push({ transform: `${end} scale(1.6,0.25)`, opacity: 1, offset: 0.8 }, { transform: `${end} scale(2.2,0.1)`, opacity: 0, offset: 1 });
-    } else {
-      frames[frames.length - 1]!.opacity = endOpacity;
+    ctx.clearRect(0, 0, W, H);
+    let alive = 0;
+    for (const p of parts) {
+      if (p.dead) continue;
+      if (!p.landedAt) {
+        p.vy += G * dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.rot += p.vr * dt;
+      }
+      const bottom = floorY - p.size / 2;
+      const falling = c.direction === "down" && !c.fade;
+      if (falling && p.y >= bottom && !p.landedAt) {
+        if (c.floor === "bounce") {
+          p.y = bottom;
+          p.vy *= -0.6;
+          if (Math.abs(p.vy) < 0.05) { p.vy = 0; p.landedAt = now; }
+        } else if (c.floor === "vanish" || c.floor === "splat") {
+          p.y = bottom; p.vy = 0; p.vx = 0; p.landedAt = now;
+        }
+      }
+      if (p.landedAt) {
+        const since = now - p.landedAt;
+        if (c.floor === "vanish") p.alpha = since < 1000 ? 1 : Math.max(0, 1 - (since - 1000) / 400);
+        else if (c.floor === "splat") { p.scaleY = 0.2; p.alpha = Math.max(0, 1 - since / 300); }
+        else if (c.floor === "bounce") p.alpha = Math.max(0, 1 - since / 500);
+      } else if (c.fade) {
+        // Vervaagt naarmate het verder beweegt.
+        const prog = c.direction === "up" ? 1 - p.y / H : c.direction === "burst" ? Math.hypot(p.x - W / 2, p.y - H / 2) / (Math.max(W, H) / 2) : p.y / H;
+        p.alpha = Math.max(0, 1 - Math.max(0, prog));
+      }
+      if (p.y > H + p.size || p.y < -p.size * 3 || p.x < -W * 0.5 || p.x > W * 1.5 || p.alpha <= 0) { p.dead = true; continue; }
+      alive += 1;
+      ctx.save();
+      ctx.globalAlpha = p.alpha * globalA;
+      ctx.translate(p.x, p.landedAt && c.floor === "splat" ? floorY - (p.size * 0.2) / 2 : p.y);
+      ctx.rotate(p.landedAt ? 0 : p.rot);
+      ctx.scale(p.scaleY < 1 ? 1.8 : 1, p.scaleY);
+      ctx.font = `${p.size}px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+      ctx.fillText(p.e, 0, 0);
+      ctx.restore();
     }
-    const anim = el.animate(frames, { duration: life, delay, easing: c.direction === "down" ? "cubic-bezier(.45,.05,.75,.6)" : "cubic-bezier(.2,.7,.3,1)", fill: "forwards" });
-    anim.onfinish = () => el.remove();
-  }
+    if ((spawned >= c.amount && alive === 0) || el > total + 1500) return cleanup();
+    raf = requestAnimationFrame(tick);
+  };
   const cleanup = () => {
     if (done) return;
     done = true;
-    timers.forEach((t) => window.clearTimeout(t));
-    root.remove();
+    cancelAnimationFrame(raf);
+    canvas.remove();
   };
-  timers.push(window.setTimeout(cleanup, total + 500));
+  raf = requestAnimationFrame(tick);
   return cleanup;
 }
