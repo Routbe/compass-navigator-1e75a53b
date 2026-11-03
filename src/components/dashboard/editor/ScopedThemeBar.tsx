@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -69,21 +70,19 @@ const glassTargetOf = (scope: ThemeScope): (keyof GlassTargets)[] =>
     : scope === "presence" ? ["presence"]
     : ["board"];
 
+/** Native select met compacte overlay: op 360px duwt hij de titel nooit weg. */
 export function ThemeScopeSelect({ scope, onChange, allowedScopes }: { scope: ThemeScope; onChange: (s: ThemeScope) => void; allowedScopes?: readonly ThemeScope[] }) {
   const list = SCOPES.filter((s) => (allowedScopes ?? PROFILE_SCOPES).includes(s.id));
+  const cur = list.find((s) => s.id === scope) ?? list[0];
   return (
-    <Select value={scope} onValueChange={(v) => onChange(v as ThemeScope)}>
-      <SelectTrigger aria-label="Stijl toepassen op" className="h-9 w-auto min-w-0 max-w-[9.5rem] gap-1 rounded-full text-xs sm:max-w-none">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {list.map((s) => (
-          <SelectItem key={s.id} value={s.id}>
-            <span className="sm:hidden">{s.short}</span><span className="hidden sm:inline">{s.label}</span>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <label className="relative inline-flex h-9 max-w-[8.5rem] shrink-0 items-center gap-1 rounded-full border border-border bg-background px-3 text-xs font-medium focus-within:ring-2 focus-within:ring-ring sm:max-w-none">
+      <span className="truncate sm:hidden">{cur?.short}</span>
+      <span className="hidden truncate sm:inline">{cur?.label}</span>
+      <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+      <select aria-label="Stijl toepassen op" value={scope} onChange={(e) => onChange(e.target.value as ThemeScope)} className="absolute inset-0 cursor-pointer opacity-0">
+        {list.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+      </select>
+    </label>
   );
 }
 
