@@ -186,6 +186,7 @@ import { Route as SolutionsAgenciesRouteImport } from './routes/solutions.agenci
 import { Route as SolutionsCreatorsRouteImport } from './routes/solutions.creators'
 import { Route as SolutionsDevelopersRouteImport } from './routes/solutions.developers'
 import { Route as StatsTokenRouteImport } from './routes/stats.$token'
+import { Route as StudioGridRouteImport } from './routes/studio_.grid'
 import { Route as SupportIndexRouteImport } from './routes/support.index'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as WSlugRouteImport } from './routes/w.$slug'
@@ -1262,6 +1263,11 @@ const SolutionsDevelopersRoute = SolutionsDevelopersRouteImport.update({
 const StatsTokenRoute = StatsTokenRouteImport.update({
   id: '/stats/$token',
   path: '/stats/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioGridRoute = StudioGridRouteImport.update({
+  id: '/studio_/grid',
+  path: '/studio/grid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupportIndexRoute = SupportIndexRouteImport.update({
@@ -2467,6 +2473,7 @@ export interface FileRoutesByFullPath {
   '/solutions/creators': typeof SolutionsCreatorsRoute
   '/solutions/developers': typeof SolutionsDevelopersRoute
   '/stats/$token': typeof StatsTokenRoute
+  '/studio/grid': typeof StudioGridRoute
   '/u/$username': typeof UUsernameRoute
   '/w/$slug': typeof WSlugRoute
   '/workspace-transfer/$token': typeof WorkspaceTransferTokenRoute
@@ -2817,6 +2824,7 @@ export interface FileRoutesByTo {
   '/solutions/creators': typeof SolutionsCreatorsRoute
   '/solutions/developers': typeof SolutionsDevelopersRoute
   '/stats/$token': typeof StatsTokenRoute
+  '/studio/grid': typeof StudioGridRoute
   '/u/$username': typeof UUsernameRoute
   '/w/$slug': typeof WSlugRoute
   '/workspace-transfer/$token': typeof WorkspaceTransferTokenRoute
@@ -3182,6 +3190,7 @@ export interface FileRoutesById {
   '/solutions/creators': typeof SolutionsCreatorsRoute
   '/solutions/developers': typeof SolutionsDevelopersRoute
   '/stats/$token': typeof StatsTokenRoute
+  '/studio_/grid': typeof StudioGridRoute
   '/u/$username': typeof UUsernameRoute
   '/w/$slug': typeof WSlugRoute
   '/workspace-transfer/$token': typeof WorkspaceTransferTokenRoute
@@ -3549,6 +3558,7 @@ export interface FileRouteTypes {
     | '/solutions/creators'
     | '/solutions/developers'
     | '/stats/$token'
+    | '/studio/grid'
     | '/u/$username'
     | '/w/$slug'
     | '/workspace-transfer/$token'
@@ -3899,6 +3909,7 @@ export interface FileRouteTypes {
     | '/solutions/creators'
     | '/solutions/developers'
     | '/stats/$token'
+    | '/studio/grid'
     | '/u/$username'
     | '/w/$slug'
     | '/workspace-transfer/$token'
@@ -4263,6 +4274,7 @@ export interface FileRouteTypes {
     | '/solutions/creators'
     | '/solutions/developers'
     | '/stats/$token'
+    | '/studio_/grid'
     | '/u/$username'
     | '/w/$slug'
     | '/workspace-transfer/$token'
@@ -4558,6 +4570,7 @@ export interface RootRouteChildren {
   ReviewTokenRoute: typeof ReviewTokenRoute
   SSlugRoute: typeof SSlugRoute
   StatsTokenRoute: typeof StatsTokenRoute
+  StudioGridRoute: typeof StudioGridRoute
   UUsernameRoute: typeof UUsernameRoute
   WSlugRoute: typeof WSlugRoute
   WorkspaceTransferTokenRoute: typeof WorkspaceTransferTokenRoute
@@ -5897,6 +5910,13 @@ declare module '@tanstack/react-router' {
       path: '/stats/$token'
       fullPath: '/stats/$token'
       preLoaderRoute: typeof StatsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio_/grid': {
+      id: '/studio_/grid'
+      path: '/studio/grid'
+      fullPath: '/studio/grid'
+      preLoaderRoute: typeof StudioGridRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/support/': {
@@ -7873,6 +7893,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewTokenRoute: ReviewTokenRoute,
   SSlugRoute: SSlugRoute,
   StatsTokenRoute: StatsTokenRoute,
+  StudioGridRoute: StudioGridRoute,
   UUsernameRoute: UUsernameRoute,
   WSlugRoute: WSlugRoute,
   WorkspaceTransferTokenRoute: WorkspaceTransferTokenRoute,
