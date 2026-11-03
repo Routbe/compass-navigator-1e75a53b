@@ -14,7 +14,7 @@ export type StatusInput = z.infer<typeof statusInput>;
 export type PresenceStory = {
   id: string; statusType: "qa_reply" | "micro_text" | "omni_drop";
   createdAt: string; expiresAt: string; theme?: "aurora" | "glass";
-  text?: string; question?: string; answer?: string;
+  text?: string; question?: string; answer?: string; prompt?: string | null;
   blockId?: string; title?: string; targetUrl?: string; mediaUrl?: string; badge?: string;
   pending?: boolean;
 };

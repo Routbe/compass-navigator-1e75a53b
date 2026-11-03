@@ -9,12 +9,14 @@ import { storyGesture } from "@/lib/qa/story-gestures";
 import { ProceduralStoryBackground } from "./ProceduralStoryBackground";
 import { activePresence, type PresenceStory } from "@/lib/presence";
 import { galleryImageSrc } from "@/lib/image-proxy-rules";
+import { storedPromptLabel } from "@/lib/qa/prompts";
 
 const STORY_MS = 6500;
 
 function relativeTime(iso: string, locale: string): string {
   // Clamp small clock skew so a fresh answer never reads "in a minute".
   const diff = Math.min(0, (Date.parse(iso) - Date.now()) / 1000);
+  if (Math.abs(diff) < 30) return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(0, "minute");
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   if (Math.abs(diff) < 3600) return rtf.format(Math.round(diff / 60), "minute");
   return rtf.format(Math.round(diff / 3600), "hour");
@@ -37,6 +39,7 @@ export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, 
   const pointer = useRef<{ x: number; y: number } | null>(null);
   const suppressTap = useRef(false);
   const story = stories[index];
+  useEffect(() => { if (!stories.length) onClose(); else if (index >= stories.length) setIndex(stories.length - 1); }, [stories.length,index,onClose]);
   const avatar = profileImageSrc(avatarUrl);
   const name = displayName || `@${handle}`;
 
@@ -76,7 +79,7 @@ export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, 
   }, [onClose, next, prev]);
 
   if (!story) return null;
-  const promptLabel = t("pages.qa.story.anonymous");
+  const promptLabel = storedPromptLabel(story.prompt, t) ?? t("pages.qa.story.anonymous");
 
   return createPortal(
     <div
@@ -97,7 +100,7 @@ export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, 
       }}
       onPointerCancel={() => { pointer.current = null; setPaused(false); suppressTap.current = true; }}
     >
-      <ProceduralStoryBackground paused={paused} />
+      <ProceduralStoryBackground paused={paused} theme={story.theme} />
       <div className="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-4 pt-3">
         <div className="flex gap-1" aria-hidden>
           {stories.map((s, i) => (

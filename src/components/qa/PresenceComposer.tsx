@@ -29,7 +29,7 @@ export function PresenceComposer({owner,handle,space,blocks}:{owner:string;handl
  const send=async(input:StatusInput)=>{
   setBusy(true);
   try {
-   await savePending(owner,handle,input);setPending(rows=>[...rows.filter(r=>r.id!==input.id),input]);
+   await savePending(owner,handle,input).catch(()=>undefined);setPending(rows=>[...rows.filter(r=>r.id!==input.id),input]);
    window.dispatchEvent(new CustomEvent("rout-presence-pending",{detail:{owner,handle,space,input}}));
    await post({data:input});await removePending(owner,input.id);setPending(rows=>rows.filter(r=>r.id!==input.id));
    await query.invalidateQueries({queryKey:presenceKey(space,handle)});window.dispatchEvent(new CustomEvent("rout-presence-confirmed",{detail:{id:input.id}}));
