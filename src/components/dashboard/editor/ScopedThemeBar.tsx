@@ -112,7 +112,7 @@ export function ScopedThemeBar({ prefs, setPref, scope = "all", showTypography =
     setPref("themeOverrides", next.overrides);
   };
   const reset = () => {
-    let o = resetScope(prefs.themeOverrides, scope);
+    let o = resetScope(prefs.themeOverrides, scope as Exclude<ThemeScope, "all">);
     if (scope === "questions") o = resetScope(o, "answers");
     setPref("themeOverrides", o);
   };
