@@ -3,8 +3,6 @@ import { createPortal } from "react-dom";
 import { MessageCircleQuestion, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { profileImageSrc } from "@/lib/image-proxy-rules";
-import { storedPromptLabel } from "@/lib/qa/prompts";
-import type { QaAnswer } from "@/lib/qa/story";
 import { qaPaths, type QaSpace } from "./useQaPublic";
 import { Button } from "@/components/ui/button";
 import { storyGesture } from "@/lib/qa/story-gestures";

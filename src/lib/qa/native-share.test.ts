@@ -18,3 +18,8 @@ it("distinguishes cancellation from a rejected OS share", async () => {
   share.mockRejectedValue(new Error("Denied"));
   await expect(shareStoryFile(storyFile(new Blob(["a"], { type: "image/png" }), "rout.png"))).rejects.toThrow("Denied");
 });
+it("passes a generated video file unchanged to the native share sheet",async()=>{
+ const file=storyFile(new Blob(["recorded-video"],{type:"video/webm"}),"rout-story.webm");
+ const share=vi.fn().mockResolvedValue(undefined);vi.stubGlobal("navigator",{canShare:()=>true,share});
+ expect(await shareStoryFile(file)).toBe("shared");expect(share).toHaveBeenCalledWith({files:[file]});expect(file.size).toBe(14);
+});

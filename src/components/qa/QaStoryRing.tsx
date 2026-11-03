@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useI18n } from "@/lib/i18n";
-import { activeStories, hasUnseen, seenStorageKey } from "@/lib/qa/story";
+import { activeStories, seenStorageKey } from "@/lib/qa/story";
 import { useQaPublic, type QaSpace } from "./useQaPublic";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";

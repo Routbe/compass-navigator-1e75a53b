@@ -20,17 +20,18 @@ create function public.validate_ephemeral_presence() returns trigger
 language plpgsql set search_path=pg_catalog,public as $$
 declare p jsonb := new.content_payload; q record;
 begin
- if jsonb_typeof(p)<>'object' or octet_length(p::text)>4096 then raise exception 'invalid_status_payload'; end if;
+ if jsonb_typeof(p) is distinct from 'object' or octet_length(p::text)>4096 then raise exception 'invalid_status_payload'; end if;
  if new.status_type='micro_text' then
-  if jsonb_typeof(p->'text')<>'string' or char_length(btrim(p->>'text')) not between 1 and 280
+  if jsonb_typeof(p->'text') is distinct from 'string' or char_length(btrim(p->>'text')) not between 1 and 280
    or coalesce(p->>'theme','aurora') not in ('aurora','glass')
+   or (p ? 'theme' and jsonb_typeof(p->'theme') is distinct from 'string')
    or exists(select 1 from jsonb_object_keys(p) k where k not in ('text','theme')) then raise exception 'invalid_micro_text'; end if;
  elsif new.status_type='omni_drop' then
-  if jsonb_typeof(p->'blockId')<>'string' or char_length(p->>'blockId') not between 1 and 100
-   or (p ? 'itemId' and (jsonb_typeof(p->'itemId')<>'string' or char_length(p->>'itemId') not between 1 and 100))
+  if jsonb_typeof(p->'blockId') is distinct from 'string' or char_length(p->>'blockId') not between 1 and 100
+   or (p ? 'itemId' and (jsonb_typeof(p->'itemId') is distinct from 'string' or char_length(p->>'itemId') not between 1 and 100))
    or exists(select 1 from jsonb_object_keys(p) k where k not in ('blockId','itemId')) then raise exception 'invalid_omni_drop'; end if;
  else
-  if jsonb_typeof(p->'questionId')<>'string' or exists(select 1 from jsonb_object_keys(p) k where k<>'questionId') then raise exception 'invalid_qa_reference'; end if;
+  if jsonb_typeof(p->'questionId') is distinct from 'string' or exists(select 1 from jsonb_object_keys(p) k where k<>'questionId') then raise exception 'invalid_qa_reference'; end if;
   select owner_id,space,answered_at,story_until into q from public.profile_questions
    where id=(p->>'questionId')::uuid and owner_id=new.user_id and published and answer is not null and not is_quarantined;
   if not found or q.space<>new.space or q.story_until is null then raise exception 'invalid_qa_reference'; end if;
