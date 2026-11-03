@@ -35,7 +35,7 @@ export function QaStoryRing({ handle, space, displayName, avatarUrl, children }:
   const stories = useMemo(() => {
     if(now===null)return [];
     if(presence.data)return activePresence([...presence.data,...pending.filter(p=>!presence.data.some(s=>s.id===p.id))],now);
-    return activeStories(qa.data?.answers ?? [],now).map(s=>({id:s.id,statusType:"qa_reply" as const,question:s.body,answer:s.answer,createdAt:s.answeredAt,expiresAt:s.storyUntil ?? new Date(Date.parse(s.answeredAt)+86400000).toISOString()}));
+    return activePresence([...activeStories(qa.data?.answers ?? [],now).map(s=>({id:s.id,statusType:"qa_reply" as const,question:s.body,answer:s.answer,createdAt:s.answeredAt,expiresAt:s.storyUntil ?? new Date(Date.parse(s.answeredAt)+86400000).toISOString()})),...pending],now);
   }, [qa.data,presence.data,now,pending]);
 
   useEffect(()=>{
