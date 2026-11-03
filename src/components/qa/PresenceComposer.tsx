@@ -42,7 +42,7 @@ export function PresenceComposer({owner,handle,space,blocks}:{owner:string;handl
  return <>
   <Button variant="outline" className="w-full justify-start gap-2" onClick={()=>setOpen(true)}><Radio className="h-4 w-4"/>{t("presence.update")}</Button>
   <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md"><DialogHeader><DialogTitle>{t("presence.update")}</DialogTitle></DialogHeader>
-   <div className="flex gap-2"><Button variant={mode==="text"?"default":"outline"} onClick={()=>setMode("text")}>{t("presence.write")}</Button><Button variant={mode==="grid"?"default":"outline"} onClick={()=>setMode("grid")}>{t("presence.grid")}</Button></div>
+   <div className="grid grid-cols-2 gap-2"><Button className="h-auto whitespace-normal" variant={mode==="text"?"default":"outline"} onClick={()=>setMode("text")}>{t("presence.write")}</Button><Button className="h-auto whitespace-normal" variant={mode==="grid"?"default":"outline"} onClick={()=>setMode("grid")}>{t("presence.grid")}</Button></div>
    {mode==="text"?<>
     <div className="relative mx-auto flex aspect-[9/16] max-h-64 w-36 items-center justify-center overflow-hidden rounded-lg bg-story-viewport text-story-card"><ProceduralStoryBackground/><p className="relative break-words px-3 text-center text-sm font-semibold">{text}</p></div>
     <Textarea aria-label={t("presence.write")} value={text} onChange={e=>setText(e.target.value)} rows={4}/><span className="text-xs text-muted-foreground">{[...text].length}/280</span>
