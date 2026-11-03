@@ -635,7 +635,7 @@ export function ProfileView({
                {tx("profile.noLinks")} </p>
           )}
           {blocks.map((b) => <div key={b.id} className={cn("min-w-0", (isWidgetBlock(b.kind) || isProfileSectionKind(b.kind) || b.kind.startsWith("widget:") || b.kind === "text" || b.kind === "spacer" || b.kind === "live") && "col-span-full")}>
-            b.kind === "widget:guestbook" ? (
+            {b.kind === "widget:guestbook" ? (
               profile.username && prefs.guestbookEnabled ? <div key={b.id} className="w-full lg:col-span-full"><ProfileGuestbook handle={profile.username} theme={t} /></div> : null
             ) : b.kind === "widget:badges" ? (
               prefs.badgeShowcaseVisible ? <div key={b.id} className="w-full lg:col-span-full"><BadgeShowcase userId={profile.id} theme={t} /></div> : null

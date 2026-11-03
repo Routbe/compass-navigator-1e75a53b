@@ -30,6 +30,12 @@ export function QaShareDialog({ open, onOpenChange, target, handle, space, displ
   const [blob, setBlob] = useState<Blob | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const [video,setVideo]=useState<File|null>(null);
+  useEffect(()=>{setVideo(null);if(!open||target?.kind!=="answer")return;
+    const controller=new AbortController();let alive=true;
+    void import("@/lib/qa/story-video").then(m=>m.renderPresenceVideo(`${target.question}\n\n${target.answer}`,controller.signal)).then(file=>{if(alive)setVideo(file);}).catch(()=>undefined);
+    return()=>{alive=false;controller.abort();};
+  },[open,target]);
   const qrRef = useRef<HTMLCanvasElement | null>(null);
   const link = typeof window === "undefined" ? qaPaths(handle, space).ask : `${window.location.origin}${qaPaths(handle, space).ask}`;
   const fileName = `rout-${handle}-${target?.kind ?? "story"}.png`;
@@ -112,6 +118,7 @@ export function QaShareDialog({ open, onOpenChange, target, handle, space, displ
           )}
         </div>
         <div className="grid gap-2">
+          {video&&<Button variant="outline" onClick={()=>{if(supportsStoryShare(video))void shareStoryFile(video).catch(()=>toast.error(t("pages.qa.share.failed")));else {const href=URL.createObjectURL(video);save(href,video.name);setTimeout(()=>URL.revokeObjectURL(href),1000);}}}><Share2 className="h-4 w-4"/>{t(supportsStoryShare(video)?"presence.share":"presence.download")}</Button>}
           {canShareFile && (
             <Button onClick={() => void share()} className="gap-2"><Share2 className="h-4 w-4" aria-hidden />{t("pages.qa.share.share")}</Button>
           )}
