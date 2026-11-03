@@ -629,13 +629,13 @@ export function ProfileView({
 
         <div className="flex w-full flex-col items-center" style={sectionStyle("blocks")}>
 
-         <div className="omni-profile-grid mt-8 grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
+         <div className={`mt-8 grid w-full gap-3 ${wide ? "lg:grid-cols-2" : "grid-cols-1"}`}>
           {blocks.length === 0 && (
             <p className="text-center text-sm" style={{ color: t.muted }}>
                {tx("profile.noLinks")} </p>
           )}
-          {blocks.map((b) => <div key={b.id} className={cn("min-w-0", (isWidgetBlock(b.kind) || isProfileSectionKind(b.kind) || b.kind.startsWith("widget:") || b.kind === "text" || b.kind === "spacer" || b.kind === "live") && "col-span-full")}>
-            {b.kind === "widget:guestbook" ? (
+          {blocks.map((b) =>
+            b.kind === "widget:guestbook" ? (
               profile.username && prefs.guestbookEnabled ? <div key={b.id} className="w-full lg:col-span-full"><ProfileGuestbook handle={profile.username} theme={t} /></div> : null
             ) : b.kind === "widget:badges" ? (
               prefs.badgeShowcaseVisible ? <div key={b.id} className="w-full lg:col-span-full"><BadgeShowcase userId={profile.id} theme={t} /></div> : null
@@ -764,7 +764,7 @@ export function ProfileView({
                 className={cn(
                   iconOnly
                     ? "flex h-14 w-14 items-center justify-center self-center transition-opacity hover:opacity-80"
-                    : "flex h-full min-h-28 w-full flex-col items-center justify-center gap-3 px-3 py-4 text-sm font-medium transition-opacity hover:opacity-80",
+                    : "flex min-h-12 w-full items-center gap-3 px-4 py-3 text-sm font-medium transition-opacity hover:opacity-80",
                   buttonEffectClass(prefs.buttonEffect),
                   ctaClass(b.id),
                 )}
@@ -784,7 +784,7 @@ export function ProfileView({
                     className="h-4 w-4 text-current"
                   />
                 )}
-                {!iconOnly && <span className="min-w-0 w-full break-words text-center">{b.label}</span>}
+                {!iconOnly && <span className="min-w-0 flex-1 truncate text-center">{b.label}</span>}
                 {(profile.social_links ?? []).filter(link => link.isVerified && link.platform === b.kind && socialHandleKey(link.username) === socialHandleKey(b.value)).slice(0, 1).map(link => (
                   <span key={link.platform} className="inline-flex items-center gap-1 text-emerald-500">
                     <VerifiedAccountCheck name={profile.display_name || profile.username} platform={PLATFORM_LABEL[link.platform]} handle={link.username} className="h-4 w-4" theme={t} />
@@ -792,7 +792,7 @@ export function ProfileView({
                   </span>
                 ))}
               </a>
-            )}</div>,
+            ),
           )}
         </div>
 
