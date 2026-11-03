@@ -25,6 +25,16 @@
 @import "@fontsource/jetbrains-mono/600.css";
 @plugin "@tailwindcss/typography";
 
+:root {
+  --social-grid-ink: oklch(1 0 0);
+  --social-grid-shade: oklch(0 0 0 / .68);
+  --social-grid-clear: oklch(0 0 0 / 0);
+  --social-grid-icon-shadow: oklch(0 0 0 / .55);
+}
+.social-grid-icon { color: var(--social-grid-ink); filter: drop-shadow(0 1px 2px var(--social-grid-icon-shadow)); }
+.social-grid-caption { background: linear-gradient(to top, var(--social-grid-shade), var(--social-grid-clear) 70%); color: var(--social-grid-ink); }
+.social-grid-section { padding-bottom: max(.75rem, env(safe-area-inset-bottom)); }
+
 @theme {
   --color-docs-info: oklch(0.78 0.10 245);
   --color-docs-warning: oklch(0.85 0.14 85);

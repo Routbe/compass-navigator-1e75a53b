@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from "@dnd-kit/core";
+import { SortableContext, useSortable, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronUp, Clapperboard, GripVertical, ImagePlus, Pin, Trash2 } from "lucide-react";
 
@@ -37,8 +41,8 @@ export function SocialGridBlockSettings({
   const { t } = useTranslation();
   const [dialog, setDialog] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const [dragFrom, setDragFrom] = useState<number | null>(null);
-  const [dragOver, setDragOver] = useState<number | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+  const [replaceId, setReplaceId] = useState<string | null>(null);
   /** Raw link text per card while typing; only valid links are stored. */
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const config = parseSocialGridConfig(value);
@@ -53,6 +57,11 @@ export function SocialGridBlockSettings({
   const move = (from: number, to: number) => update({ items: moveSocialGridItem(config.items, from, to) });
 
   const addFromDialog = (picked: GalleryItem) => {
+    if (replaceId) {
+      patchItem(replaceId, { mediaUrl: picked.url });
+      setReplaceId(null);
+      return;
+    }
     const target = normalizeSocialGridTarget(picked.linkUrl ?? "") ?? undefined;
     const detected = target ? detectSocialGridTarget(target) : null;
     const item: SocialGridItem = {
@@ -82,7 +91,7 @@ export function SocialGridBlockSettings({
   };
 
   return (
-    <div className="space-y-2.5 rounded-xl border border-border/60 bg-background p-3">
+    <div className="space-y-2.5 border-t border-border/60 pt-3">
       <p className="text-[11px] font-medium text-foreground">{t("studio.grid.heading")}</p>
 
       <Input
@@ -99,37 +108,28 @@ export function SocialGridBlockSettings({
           {t("studio.grid.empty")}
         </p>
       ) : (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={({ active, over }) => {
+          if (!over || active.id === over.id) return;
+          move(config.items.findIndex(i => i.id === active.id), config.items.findIndex(i => i.id === over.id));
+        }}>
+        <SortableContext items={config.items.map(i => i.id)} strategy={verticalListSortingStrategy}>
         <ul className="space-y-1.5">
           {config.items.map((item, index) => {
             const expanded = open === item.id;
             const raw = drafts[item.id] ?? item.targetUrl ?? "";
             const targetInvalid = raw.trim() !== "" && normalizeSocialGridTarget(raw) === null;
             return (
-              <li
-                key={item.id}
-                draggable
-                onDragStart={(e) => { setDragFrom(index); e.dataTransfer.effectAllowed = "move"; }}
-                onDragOver={(e) => { if (dragFrom === null) return; e.preventDefault(); setDragOver(index); }}
-                onDragLeave={() => setDragOver((v) => (v === index ? null : v))}
-                onDrop={(e) => { e.preventDefault(); if (dragFrom !== null) move(dragFrom, index); setDragFrom(null); setDragOver(null); }}
-                onDragEnd={() => { setDragFrom(null); setDragOver(null); }}
-                className={cn(
-                  "rounded-lg border border-border/60 bg-background transition-colors",
-                  dragOver === index && dragFrom !== index && "border-foreground",
-                  dragFrom === index && "opacity-50",
-                )}
-              >
-                <div className="flex items-center gap-1.5 p-1.5">
-                  <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-muted-foreground" aria-label={t("studio.grid.drag")} />
+              <SortableCard key={item.id} id={item.id} label={t("studio.grid.drag")}>
+                <div className="flex items-center gap-1.5 p-1.5 pl-8">
                   <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
                     <img src={galleryImageSrc(item.mediaUrl) ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" />
                     {item.isVideo && <Clapperboard className="absolute right-0.5 top-0.5 h-3 w-3 text-background drop-shadow" aria-hidden />}
                   </div>
-                  <button
+                  <Button variant="ghost"
                     type="button"
                     onClick={() => setOpen(expanded ? null : item.id)}
                     aria-expanded={expanded}
-                    className="min-w-0 flex-1 text-left"
+                    className="h-auto min-w-0 flex-1 flex-col items-start gap-0 text-left"
                   >
                     <span className="block truncate text-[11px] font-medium text-foreground">
                       {item.caption || t(`studio.grid.platform.${item.platform}`)}
@@ -137,18 +137,19 @@ export function SocialGridBlockSettings({
                     <span className="block truncate text-[10px] text-muted-foreground">
                       {item.targetUrl || t("studio.grid.noTarget")}
                     </span>
-                  </button>
+                  </Button>
                   {item.pinned && <Pin className="h-3.5 w-3.5 shrink-0 text-foreground" aria-label={t("studio.grid.pinned")} />}
-                  <button type="button" aria-label={t("studio.grid.moveUp")} disabled={index === 0} onClick={() => move(index, index - 1)} className="rounded-md p-1 text-muted-foreground hover:bg-muted disabled:opacity-30">
+                  <Button variant="ghost" type="button" aria-label={t("studio.grid.moveUp")} disabled={index === 0} onClick={() => move(index, index - 1)} className="rounded-md p-1 text-muted-foreground hover:bg-muted disabled:opacity-30">
                     <ChevronUp className="h-3.5 w-3.5" />
-                  </button>
-                  <button type="button" aria-label={t("studio.grid.moveDown")} disabled={index === config.items.length - 1} onClick={() => move(index, index + 1)} className="rounded-md p-1 text-muted-foreground hover:bg-muted disabled:opacity-30">
+                  </Button>
+                  <Button variant="ghost" type="button" aria-label={t("studio.grid.moveDown")} disabled={index === config.items.length - 1} onClick={() => move(index, index + 1)} className="rounded-md p-1 text-muted-foreground hover:bg-muted disabled:opacity-30">
                     <ChevronDown className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 </div>
 
                 {expanded && (
                   <div className="space-y-2 border-t border-border/60 p-2">
+                    <Button variant="outline" size="sm" onClick={() => { setReplaceId(item.id); setDialog(true); }}><ImagePlus className="h-3.5 w-3.5" /> {t("studio.grid.replace")}</Button>
                     <label className="block space-y-1">
                       <span className="text-[10px] font-medium text-muted-foreground">{t("studio.grid.target")}</span>
                       <Input
@@ -174,7 +175,7 @@ export function SocialGridBlockSettings({
                       <span className="text-[10px] font-medium text-muted-foreground">{t("studio.grid.platformLabel")}</span>
                       <div className="grid grid-cols-4 gap-1">
                         {SOCIAL_GRID_PLATFORMS.map((p) => (
-                          <button
+                          <Button variant="ghost"
                             key={p}
                             type="button"
                             onClick={() => patchItem(item.id, { platform: p })}
@@ -185,7 +186,7 @@ export function SocialGridBlockSettings({
                             )}
                           >
                             {t(`studio.grid.platform.${p}`)}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -200,34 +201,44 @@ export function SocialGridBlockSettings({
                       <span className="text-[11px] font-medium text-foreground">{t("studio.grid.pin")}</span>
                       <Switch checked={item.pinned} onCheckedChange={(v) => patchItem(item.id, { pinned: v })} />
                     </label>
-                    <button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => update({ items: config.items.filter((i) => i.id !== item.id) })}
                       className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> {t("studio.grid.delete")}
-                    </button>
+                    </Button>
                   </div>
                 )}
-              </li>
+              </SortableCard>
             );
           })}
         </ul>
+        </SortableContext>
+        </DndContext>
       )}
 
-      <button
+      <Button variant="ghost"
         type="button"
-        onClick={() => setDialog(true)}
+        onClick={() => { setReplaceId(null); setDialog(true); }}
         disabled={full}
         className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-border text-[11px] font-medium hover:bg-muted disabled:opacity-50"
       >
         <ImagePlus className="h-3.5 w-3.5" /> {t("studio.grid.add")}
-      </button>
+      </Button>
       <p className="text-[10px] text-muted-foreground">
         {t("studio.grid.count", { count: config.items.length, max: SOCIAL_GRID_MAX_ITEMS })}
       </p>
 
-      <GalleryImageDialog open={dialog} onOpenChange={setDialog} onAdd={addFromDialog} />
+      <GalleryImageDialog open={dialog} onOpenChange={(next) => { setDialog(next); if (!next) setReplaceId(null); }} onAdd={addFromDialog} />
     </div>
   );
+}
+
+function SortableCard({ id, label, children }: { id: string; label: string; children: ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  return <li ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn("relative rounded-lg border border-border/60 bg-background", isDragging && "z-10 opacity-60")}>
+    <Button variant="ghost" size="icon" {...attributes} {...listeners} aria-label={label} title={label} className="absolute left-1 top-3 h-7 w-6 [touch-action:none] cursor-grab"><GripVertical className="h-4 w-4" /></Button>
+    {children}
+  </li>;
 }

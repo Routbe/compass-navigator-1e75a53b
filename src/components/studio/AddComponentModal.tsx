@@ -395,12 +395,12 @@ export function AddComponentModal({ open, onClose, onAdd, handle, onWidget }: Pr
                   >
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-1.5 text-sm font-medium">
-                        {item.kind === "feedback" ? t("feedback.title") : item.label}
+                        {item.kind === "social_grid" ? t("studio.grid.heading") : item.kind === "feedback" ? t("feedback.title") : item.label}
                         {item.isNew && (
                           <span className="rounded-full bg-muted px-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Nieuw</span>
                         )}
                       </span>
-                      <span className="block truncate text-[11px] text-muted-foreground">{item.note}</span>
+                      <span className="block truncate text-[11px] text-muted-foreground">{item.kind === "social_grid" ? t("studio.grid.libraryNote") : item.note}</span>
                     </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                   </button>

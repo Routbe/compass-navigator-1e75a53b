@@ -1,4 +1,8 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { galleryImageSrc } from "@/lib/image-proxy-rules";
+import { isSocialGridMediaUrl } from "@/lib/social-grid";
 import { ImagePlus, Loader2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 
@@ -9,8 +13,7 @@ import { uploadGalleryMedia } from "@/lib/gallery-media.functions";
 import {
   GALLERY_ALLOWED_TYPES,
   GALLERY_MAX_BYTES,
-  isValidImageUrl,
-  newGalleryItemId,
+    newGalleryItemId,
   type GalleryItem,
 } from "@/lib/gallery";
 import { cn } from "@/lib/utils";
@@ -41,7 +44,8 @@ export function GalleryImageDialog({
   onOpenChange: (open: boolean) => void;
   onAdd: (item: GalleryItem) => void;
 }) {
-  const [tab, setTab] = useState("upload");
+  const { t } = useTranslation();
+  const [tab, setTab] = useState("url");
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [url, setUrl] = useState("");
@@ -58,7 +62,7 @@ export function GalleryImageDialog({
     setAlt("");
     setLinkUrl("");
     setDragging(false);
-    setTab("upload");
+    setTab("url");
   }
 
   function commit(imageUrl: string) {
@@ -76,11 +80,11 @@ export function GalleryImageDialog({
   async function handleFile(file: File | undefined | null) {
     if (!file || busy) return;
     if (!GALLERY_ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Gebruik een JPG, PNG, WebP, GIF of SVG.");
+      toast.error(t("studio.grid.media.types"));
       return;
     }
     if (file.size > GALLERY_MAX_BYTES) {
-      toast.error("Houd de foto onder 10 MB.");
+      toast.error(t("studio.grid.media.size"));
       return;
     }
     setBusy(true);
@@ -91,12 +95,12 @@ export function GalleryImageDialog({
         data: { base64, contentType: file.type, ext },
       });
       if (!res.ok || !res.url) {
-        toast.error(res.message ?? "Upload mislukt.");
+        toast.error(res.message ?? t("studio.grid.media.failed"));
         return;
       }
       commit(res.url);
     } catch {
-      toast.error("Upload mislukt. Probeer het opnieuw.");
+      toast.error(t("studio.grid.media.failed"));
     } finally {
       setBusy(false);
     }
@@ -112,17 +116,17 @@ export function GalleryImageDialog({
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base">Foto toevoegen</DialogTitle>
+          <DialogTitle className="text-base">{t("studio.grid.media.title")}</DialogTitle>
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="upload">Bestand uploaden</TabsTrigger>
-            <TabsTrigger value="url">Afbeeldings-URL plakken</TabsTrigger>
+            <TabsTrigger value="upload">{t("studio.grid.media.upload")}</TabsTrigger>
+            <TabsTrigger value="url">{t("studio.grid.media.url")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload" className="pt-3">
-            <button
+            <Button variant="ghost"
               type="button"
               onClick={() => fileInput.current?.click()}
               onDragOver={(e) => {
@@ -147,11 +151,11 @@ export function GalleryImageDialog({
               ) : (
                 <UploadCloud className="h-5 w-5 text-muted-foreground" />
               )}
-              <span className="text-sm font-medium">Sleep je foto hierheen</span>
+              <span className="text-sm font-medium">{t("studio.grid.media.drop")}</span>
               <span className="text-[11px] text-muted-foreground">
-                JPG, PNG, WebP, GIF of SVG — max 10 MB
+                {t("studio.grid.media.types")}
               </span>
-            </button>
+            </Button>
             <input
               ref={fileInput}
               type="file"
@@ -171,18 +175,18 @@ export function GalleryImageDialog({
                 setUrl(e.target.value);
                 setUrlOk(null);
               }}
-              aria-label="Afbeeldings-URL"
+              aria-label={t("studio.grid.media.url")}
             />
-            {url.trim() !== "" && !isValidImageUrl(url) && (
+            {url.trim() !== "" && !isSocialGridMediaUrl(url) && (
               <p className="text-[11px] font-medium text-destructive" role="alert">
-                ⚠️ Geef een volledige http(s)-URL op
+                {t("studio.grid.media.invalid")}
               </p>
             )}
-            {isValidImageUrl(url) && (
+            {isSocialGridMediaUrl(url) && (
               <div className="overflow-hidden rounded-xl border border-border bg-muted">
                 <img
-                  src={url.trim()}
-                  alt="Voorbeeld"
+                  src={galleryImageSrc(url) ?? undefined}
+                  alt={t("studio.grid.media.preview")}
                   loading="lazy"
                   className="max-h-40 w-full object-contain"
                   onLoad={() => setUrlOk(true)}
@@ -192,44 +196,44 @@ export function GalleryImageDialog({
             )}
             {urlOk === false && (
               <p className="text-[11px] font-medium text-destructive" role="alert">
-                ⚠️ Deze URL levert geen geldige afbeelding op
+                {t("studio.grid.media.invalid")}
               </p>
             )}
-            <button
+            <Button variant="ghost"
               type="button"
-              disabled={!isValidImageUrl(url) || urlOk !== true}
+              disabled={!isSocialGridMediaUrl(url) || urlOk !== true}
               onClick={() => commit(url.trim())}
               className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-foreground text-sm font-medium text-background disabled:opacity-50"
             >
-              <ImagePlus className="h-4 w-4" /> Toevoegen
-            </button>
+              <ImagePlus className="h-4 w-4" /> {t("studio.grid.add")}
+            </Button>
           </TabsContent>
         </Tabs>
 
         <div className="space-y-2 border-t border-border pt-3">
           <Input
             className="input-field h-9 rounded-xl"
-            placeholder="Caption / titel (optioneel)"
+            placeholder={t("studio.grid.media.caption")}
             maxLength={160}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            aria-label="Caption"
+            aria-label={t("studio.grid.caption")}
           />
           <Input
             className="input-field h-9 rounded-xl"
-            placeholder="Alt-tekst voor schermlezers (optioneel)"
+            placeholder={t("studio.grid.media.alt")}
             maxLength={160}
             value={alt}
             onChange={(e) => setAlt(e.target.value)}
-            aria-label="Alt-tekst"
+            aria-label={t("studio.grid.media.alt")}
           />
           <Input
             className="input-field h-9 rounded-xl"
-            placeholder="Doellink bij klikken (optioneel)"
+            placeholder={t("studio.grid.target")}
             maxLength={2000}
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
-            aria-label="Doellink"
+            aria-label={t("studio.grid.target")}
           />
         </div>
       </DialogContent>

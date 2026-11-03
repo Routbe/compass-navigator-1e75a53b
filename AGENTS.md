@@ -15,3 +15,4 @@
 - Treat db/ and drizzle/ as unapplied source references until a reviewed migration maps accounts and access boundaries to the destination; importing files does not migrate live records or credentials.
 - Retain the imported cookie-session middleware without adding the generated bearer attacher; the retained account system does not use Cloud Auth yet.
 - Match the imported source's compiler compatibility settings while retaining strict null checks; unrelated source rewrites would compromise import fidelity.
+- Social grid edits use the shared profile block editor and revisioned drafts; social_grid_items is an owner-only synchronized index, while public hubs render published snapshots to prevent draft leaks.
