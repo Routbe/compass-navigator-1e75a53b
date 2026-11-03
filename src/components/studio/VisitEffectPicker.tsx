@@ -55,7 +55,7 @@ export function VisitEffectPicker({
     stopRef.current?.();
     const detail: { effect: VisitEffect; handled: boolean; custom?: VisitEffectCustom } = { effect: value, handled: false, custom: open ? custom : undefined };
     window.dispatchEvent(new CustomEvent(VISIT_EFFECT_TEST_EVENT, { detail }));
-    if (!detail.handled) stopRef.current = open ? runCustomVisitEffect(custom, { force: true }) : runVisitEffect(value, { force: true });
+    if (!detail.handled) stopRef.current = open ? runCustomVisitEffect(custom, { force: true, immediate: true }) : runVisitEffect(value, { force: true });
   };
 
   const addEmoji = (raw: string) => {

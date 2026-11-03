@@ -1,4 +1,3 @@
-import { runGpuVisitEffect } from "./visit-fx/run-gpu";
 /**
  * Eigen "Pagina bezoek effect": tot 4 emoji's met duur, hoeveelheid,
  * op-/afbouw, richting en wat er onderaan gebeurt. Alleen DOM + Web Animations.
@@ -207,21 +206,40 @@ function runCanvasVisitEffect(
   return cleanup;
 }
 
-/** GPU + worker eerst; canvas 2D alleen als terugval. */
+/**
+ * Lui gestart: pas na een rustige main thread (requestIdleCallback + 300 ms) wordt de
+ * GPU-module asynchroon geladen; WebGL, shaders en worker starten nooit tijdens hydratatie.
+ */
 export function runCustomVisitEffect(
   cfg: VisitEffectCustom,
-  options?: { force?: boolean; container?: HTMLElement | null },
+  options?: { force?: boolean; container?: HTMLElement | null; immediate?: boolean },
 ): () => void {
   if (typeof document === "undefined") return () => {};
   if (!options?.force && prefersReducedMotion()) return () => {};
   const c = normalizeVisitCustom(cfg);
   const total = c.duration * 1000;
-  try {
-    const stop = runGpuVisitEffect({
-      emojis: c.emojis.length ? c.emojis : ["✨"], amount: c.amount, direction: c.direction, fade: c.fade,
-      floorMode: c.floor, rampInMs: rampMs(c.rampIn, total), rampOutMs: rampMs(c.rampOut, total), totalMs: total,
-    }, options?.container ?? null);
-    if (stop) return stop;
-  } catch { /* terugval */ }
-  return runCanvasVisitEffect(cfg, { ...options, force: true });
+  let stop: (() => void) | null = null, cancelled = false;
+  const start = async () => {
+    if (cancelled) return;
+    try {
+      const { runGpuVisitEffect } = await import("./visit-fx/run-gpu");
+      if (cancelled) return;
+      stop = runGpuVisitEffect({
+        emojis: c.emojis.length ? c.emojis : ["✨"], amount: c.amount, direction: c.direction, fade: c.fade,
+        floorMode: c.floor, rampInMs: rampMs(c.rampIn, total), rampOutMs: rampMs(c.rampOut, total), totalMs: total,
+      }, options?.container ?? null);
+    } catch { stop = null; }
+    if (!stop && !cancelled) stop = runCanvasVisitEffect(cfg, { ...options, force: true });
+  };
+  const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+  let idle = 0, timer: ReturnType<typeof setTimeout> | null = null;
+  if (options?.immediate) void start();
+  else if (w.requestIdleCallback) idle = w.requestIdleCallback(() => { timer = setTimeout(start, 300); }, { timeout: 700 });
+  else timer = setTimeout(start, 500);
+  return () => {
+    cancelled = true;
+    if (idle && w.cancelIdleCallback) w.cancelIdleCallback(idle);
+    if (timer) clearTimeout(timer);
+    stop?.();
+  };
 }
