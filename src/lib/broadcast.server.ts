@@ -14,16 +14,14 @@ export async function saveBroadcast(owner:string,raw:BroadcastConfig){
 }
 export async function myBroadcasts(owner:string){
  const rows=await sql`select provider,connection_status from public.user_integrations where user_id=${owner} and provider in ('omnicast_mastodon','omnicast_bluesky','omnicast_telegram','omnicast_webhook')` as Record<string,unknown>[];
- return {ready:encryptionConfigured(),providers:rows.map(r=>({provider:String(r["provider"]).replace("omnicast_",""),connected:r["connection_status"]==="connected"}))};
+ const counts=await sql`select count(*) filter(where attempts>=5)::int as failed,count(*) filter(where attempts<5)::int as pending from public.presence_broadcast_jobs where user_id=${owner} and delivered_at is null` as Record<string,unknown>[];
+ return {ready:encryptionConfigured(),failed:Number(counts[0]?.['failed']??0),pending:Number(counts[0]?.['pending']??0),providers:rows.map(r=>({provider:String(r["provider"]).replace("omnicast_",""),connected:r["connection_status"]==="connected"}))};
 }
 export async function disconnectBroadcast(owner:string,provider:string){await sql`delete from public.user_integrations where user_id=${owner} and provider=${broadcastProvider(provider)}`;await sql`delete from public.presence_broadcast_jobs where user_id=${owner} and provider=${broadcastProvider(provider)} and delivered_at is null`;}
-export async function enqueueBroadcast(owner:string,eventId:string,space:string,text:string){
- await sql`insert into public.presence_broadcast_jobs(user_id,event_id,space,provider,payload)
- select user_id,${eventId},${space},provider,${JSON.stringify({text:text.slice(0,4000)})}::jsonb from public.user_integrations
- where user_id=${owner} and provider in ('omnicast_mastodon','omnicast_bluesky','omnicast_telegram','omnicast_webhook') and connection_status='connected'
- on conflict(user_id,event_id,provider) do nothing`;
- const task=deliverBroadcasts(owner).catch(e=>console.error("[omnicast] delivery failed",e instanceof Error?e.message:"error"));
- if(!registerBackgroundTask(task))await task;
+export async function retryBroadcasts(owner:string){
+ // Only retry confirmed server failures on the provider with an idempotency key.
+ await sql`update public.presence_broadcast_jobs set attempts=0,next_attempt_at=now(),claimed_until=null where user_id=${owner} and provider='omnicast_mastodon' and delivered_at is null and last_status>=500 and (claimed_until is null or claimed_until<now())`;
+ return deliverBroadcasts(owner);
 }
 async function send(config:BroadcastConfig,text:string,id:string):Promise<number>{
  let url="",body:unknown={},headers:Record<string,string>={"content-type":"application/json"};
@@ -54,12 +52,15 @@ export async function deliverBroadcasts(owner:string){
    const current=await sql`select content_payload->>'text' as text from public.ephemeral_statuses where id=${String(row['event_id'])} and user_id=${owner} and space=${String(row['space'])}
      union all select body || E'\n\n' || answer as text from public.profile_questions where id=${String(row['event_id'])} and owner_id=${owner} and space=${String(row['space'])} limit 1` as Record<string,unknown>[];
    if(typeof current[0]?.['text']!=='string')throw new Error('missing_source');
-   status=await send(config,String(current[0]['text']),String(row["id"]));
+   for(let attempt=0;attempt<3;attempt++){
+    status=await send(config,String(current[0]['text']),String(row["id"]));
+    if(config.provider!=="mastodon"||status<500||attempt===2)break;
+    await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));
+   }
   }catch{status=0;}
   // Ambiguous timeouts and providers without idempotency are not retried automatically.
-  const retry=String(row["provider"])==="omnicast_mastodon" && status>=500;
   await sql`update public.presence_broadcast_jobs set last_status=${status},delivered_at=case when ${status} between 200 and 299 then now() else null end,
-   claimed_until=null,next_attempt_at=now()+interval '5 minutes',attempts=case when ${retry} then attempts else 5 end where id=${String(row["id"])}`;
+   claimed_until=null,attempts=5 where id=${String(row["id"])}`;
  }
  return {processed:rows.length};
 }

@@ -669,5 +669,6 @@
   "presence.credential": "Jeton API / mot de passe d’application / secret webhook",
   "presence.connect": "Connecter",
   "presence.broadcastRoot": "Partager automatiquement depuis mon profil principal",
+  "presence.broadcastFailed": "Non livré : {{count}}",
   "presence.broadcastAlias": "Partager automatiquement depuis mon profil alias"
 }

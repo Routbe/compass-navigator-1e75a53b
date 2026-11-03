@@ -73,3 +73,14 @@ it("private canvases and unconsented aliases never create external jobs",async()
  expect((await db.query('select id from public.presence_broadcast_jobs')).rows).toEqual([]);
  }finally{await db.exec('rollback');}
 });
+it("delivery authorization rejects expired, retracted and cross-owner Q&A",async()=>{
+ await db.exec('begin');try{
+ await db.query("insert into public.profile_questions(id,owner_id,space,body,answer,published,is_quarantined,story_until) values($1,$1,'alias','Question','Answer',true,false,now()+interval '24 hours')",[owner]);
+ const allowed=async()=> (await db.query<{ok:boolean}>("select public.rout_broadcast_event_allowed($1,$1,'alias') as ok",[owner])).rows[0]?.ok;
+ expect(await allowed()).toBe(true);
+ await db.exec("update public.profile_questions set published=false");expect(await allowed()).toBe(false);
+ await db.exec("update public.profile_questions set published=true,story_until=now()-interval '1 second'");expect(await allowed()).toBe(false);
+ await db.exec("update public.profile_questions set story_until=now()+interval '24 hours'");
+ await db.query("select set_config('rout.current_user_id',$1,true)",['22222222-2222-4222-8222-222222222222']);expect(await allowed()).toBe(false);
+ }finally{await db.exec('rollback');}
+});

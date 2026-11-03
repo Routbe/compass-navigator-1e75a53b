@@ -669,5 +669,6 @@
   "presence.credential": "API token / app password / webhook secret",
   "presence.connect": "Connect",
   "presence.broadcastRoot": "Automatically share from my main profile",
+  "presence.broadcastFailed": "Not delivered: {{count}}",
   "presence.broadcastAlias": "Automatically share from my alias profile"
 }

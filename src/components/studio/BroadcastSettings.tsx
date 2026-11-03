@@ -6,7 +6,7 @@ import {toast} from "sonner";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Checkbox} from "@/components/ui/checkbox";
-import {getMyBroadcasts,saveMyBroadcast,removeMyBroadcast} from "@/lib/broadcast.functions";
+import {getMyBroadcasts,saveMyBroadcast,removeMyBroadcast,retryMyBroadcasts} from "@/lib/broadcast.functions";
 import {BROADCAST_PROVIDERS,type BroadcastConfig} from "@/lib/broadcast-rules";
 import {useI18n} from "@/lib/i18n";
 export function BroadcastSettings(){
@@ -16,6 +16,7 @@ export function BroadcastSettings(){
  const [spaces,setSpaces]=useState<('root'|'alias')[]>(['root']);
  const submit=async()=>{setBusy(true);try{await save({data:{provider,spaces,token,...(url?{url}:{}),...(handle?{handle}:{}),...(chatId?{chatId}:{})}});setToken("");await qc.invalidateQueries({queryKey:["my-broadcasts"]});toast.success(t("presence.connected"));}catch{toast.error(t("presence.connectFailed"));}finally{setBusy(false);}};
  return <details className="border-t border-border pt-4"><summary className="flex cursor-pointer items-center gap-2 text-sm font-semibold"><Radio className="h-4 w-4"/>Omnicast</summary><div className="mt-3 space-y-3">
+ {(mine.data?.failed??0)>0&&<div className="flex items-center justify-between gap-2 text-sm"><span>{t('presence.broadcastFailed',{count:mine.data?.failed})}</span><Button variant="outline" onClick={()=>void retryMyBroadcasts().then(()=>qc.invalidateQueries({queryKey:['my-broadcasts']})).catch(()=>toast.error(t('presence.connectFailed')))}>{t('presence.retry')}</Button></div>}
  {mine.data?.providers.map(p=><div key={p.provider} className="flex items-center justify-between text-sm"><span>{p.provider}</span><Button variant="ghost" size="icon" aria-label={t("presence.disconnect")} onClick={()=>void remove({data:{provider:p.provider as BroadcastConfig["provider"]}}).then(()=>qc.invalidateQueries({queryKey:["my-broadcasts"]}))}><Unplug className="h-4 w-4"/></Button></div>)}
  {!mine.data?.ready?<p className="text-sm text-muted-foreground">{t("presence.encryptionMissing")}</p>:<>
  <div className="grid grid-cols-2 gap-1">{BROADCAST_PROVIDERS.map(p=><Button key={p} variant={provider===p?"default":"outline"} onClick={()=>{setProvider(p);setToken("");setUrl("");setHandle("");setChatId("");}}>{p}</Button>)}</div>
