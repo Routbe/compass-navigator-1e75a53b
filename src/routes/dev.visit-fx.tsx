@@ -16,7 +16,7 @@ export const Route = createFileRoute("/dev/visit-fx")({
 
 function DevVisitFx() {
   const fire = (floorMode: "bounce" | "splat" | "vanish") =>
-    runCustomVisitEffect({ ...DEFAULT_VISIT_CUSTOM, enabled: true, emojis: ["🍒", "💧"], amount: 80, duration: 6, direction: "down", fade: false, floorMode, rampIn: "fast" }, { force: true, immediate: true });
+    runCustomVisitEffect({ ...DEFAULT_VISIT_CUSTOM, enabled: true, emojis: ["🍒", "💧"], amount: 80, duration: 6, direction: "down", fade: false, floor: floorMode, rampIn: "fast" }, { force: true, immediate: true });
   return (
     <main className="mx-auto max-w-md px-4 py-16 space-y-6 text-foreground" style={{ minHeight: "260vh" }}>
       <div className="flex gap-2">
