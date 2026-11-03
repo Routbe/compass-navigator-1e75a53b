@@ -634,5 +634,17 @@
   "studio.grid.platform.instagram": "Instagram",
   "studio.grid.platform.tiktok": "TikTok",
   "studio.grid.platform.article": "Artikel",
-  "studio.grid.platform.custom": "Eigen content"
+  "studio.grid.platform.custom": "Eigen content",
+  "studio.grid.replace": "Afbeelding vervangen",
+  "studio.grid.media.title": "Afbeelding toevoegen",
+  "studio.grid.media.upload": "Bestand uploaden",
+  "studio.grid.media.url": "Afbeeldings-URL",
+  "studio.grid.media.drop": "Afbeelding hier neerzetten",
+  "studio.grid.media.types": "JPG, PNG, WebP, GIF of SVG — maximaal 10 MB",
+  "studio.grid.media.size": "Houd de foto onder 10 MB.",
+  "studio.grid.media.failed": "Upload mislukt. Probeer opnieuw.",
+  "studio.grid.media.invalid": "Gebruik een toegestane https-afbeelding of eigen upload.",
+  "studio.grid.media.preview": "Voorbeeld",
+  "studio.grid.media.caption": "Titel of onderschrift (optioneel)",
+  "studio.grid.media.alt": "Alt-tekst (optioneel)"
 }

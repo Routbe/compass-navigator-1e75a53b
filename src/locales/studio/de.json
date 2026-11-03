@@ -634,5 +634,17 @@
   "studio.grid.platform.instagram": "Instagram",
   "studio.grid.platform.tiktok": "TikTok",
   "studio.grid.platform.article": "Artikel",
-  "studio.grid.platform.custom": "Eigener Inhalt"
+  "studio.grid.platform.custom": "Eigener Inhalt",
+  "studio.grid.replace": "Bild ersetzen",
+  "studio.grid.media.title": "Bild hinzufügen",
+  "studio.grid.media.upload": "Datei hochladen",
+  "studio.grid.media.url": "Bild-URL",
+  "studio.grid.media.drop": "Bild hier ablegen",
+  "studio.grid.media.types": "JPG, PNG, WebP, GIF oder SVG — maximal 10 MB",
+  "studio.grid.media.size": "Bild unter 10 MB halten.",
+  "studio.grid.media.failed": "Upload fehlgeschlagen. Erneut versuchen.",
+  "studio.grid.media.invalid": "Erlaubtes https-Bild oder eigene Datei verwenden.",
+  "studio.grid.media.preview": "Vorschau",
+  "studio.grid.media.caption": "Titel oder Beschreibung (optional)",
+  "studio.grid.media.alt": "Alternativtext (optional)"
 }
