@@ -646,5 +646,18 @@
   "studio.grid.media.invalid": "Use an allowed https image or your own upload.",
   "studio.grid.media.preview": "Preview",
   "studio.grid.media.caption": "Title or caption (optional)",
-  "studio.grid.media.alt": "Alt text (optional)"
+  "studio.grid.media.alt": "Alt text (optional)",
+  "presence.update": "Status update",
+  "presence.write": "Write a text",
+  "presence.grid": "Share profile content",
+  "presence.sent": "Status posted for 24 hours",
+  "presence.pending": "Not confirmed. Your text is saved locally; retry.",
+  "presence.encoding": "Preparing video",
+  "presence.shareFailed": "Sharing failed",
+  "presence.share": "Share to Story",
+  "presence.download": "Download video",
+  "presence.noGrid": "Publish a link or grid card on your profile first.",
+  "presence.publish": "Post for 24 hours",
+  "presence.retry": "Retry",
+  "presence.discard": "Discard local draft"
 }

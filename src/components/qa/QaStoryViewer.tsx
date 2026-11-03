@@ -3,12 +3,12 @@ import { createPortal } from "react-dom";
 import { MessageCircleQuestion, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { profileImageSrc } from "@/lib/image-proxy-rules";
-import { storedPromptLabel } from "@/lib/qa/prompts";
-import type { QaAnswer } from "@/lib/qa/story";
 import { qaPaths, type QaSpace } from "./useQaPublic";
 import { Button } from "@/components/ui/button";
 import { storyGesture } from "@/lib/qa/story-gestures";
 import { ProceduralStoryBackground } from "./ProceduralStoryBackground";
+import { activePresence, type PresenceStory } from "@/lib/presence";
+import { galleryImageSrc } from "@/lib/image-proxy-rules";
 
 const STORY_MS = 6500;
 
@@ -22,7 +22,7 @@ function relativeTime(iso: string, locale: string): string {
 
 /** Full-screen status viewer: tap right/left to move, hold to pause, Esc or ✕ to close. */
 export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, onClose }: {
-  stories: QaAnswer[];
+  stories: PresenceStory[];
   handle: string;
   space: QaSpace;
   displayName: string | null;
@@ -45,6 +45,11 @@ export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, 
     else setIndex(index + 1);
   }, [index, stories.length, onClose]);
   const prev = useCallback(() => setIndex((i) => Math.max(0, i - 1)), []);
+
+  useEffect(() => {
+    const timer=setInterval(()=>{if(story && activePresence([story],Date.now()).length===0) next();},1000);
+    return()=>clearInterval(timer);
+  },[story,next]);
 
   useEffect(() => {
     const focused = document.activeElement;
@@ -71,7 +76,7 @@ export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, 
   }, [onClose, next, prev]);
 
   if (!story) return null;
-  const promptLabel = storedPromptLabel(story.prompt, t);
+  const promptLabel = t("pages.qa.story.anonymous");
 
   return createPortal(
     <div
@@ -119,7 +124,7 @@ export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, 
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{name}</p>
-            <p className="text-xs opacity-70">{relativeTime(story.answeredAt, locale)}</p>
+            <p className="text-xs opacity-70">{story.pending ? t("presence.local") : relativeTime(story.createdAt, locale)}</p>
           </div>
           <Button variant="ghost" size="icon"
             ref={closeRef}
@@ -136,17 +141,20 @@ export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, 
         <div className="relative flex flex-1 items-center justify-center py-6">
           <Button variant="ghost" type="button" className="absolute inset-y-0 left-0 h-full w-1/3 rounded-none hover:bg-transparent" onClick={() => { if (!suppressTap.current) prev(); }} aria-label={t("pages.qa.story.prev")} />
           <Button variant="ghost" type="button" className="absolute inset-y-0 right-0 h-full w-2/3 rounded-none hover:bg-transparent" onClick={() => { if (!suppressTap.current) next(); }} aria-label={t("pages.qa.story.next")} />
-          <article key={story.id} className="pointer-events-none max-h-full w-full overflow-y-auto animate-in fade-in zoom-in-95 duration-300">
+          {story.statusType === "micro_text" ? <article className="pointer-events-none relative w-full"><p className="whitespace-pre-wrap break-words text-center font-display text-3xl leading-snug">{story.text}</p></article> : story.statusType === "omni_drop" ? <article className="relative z-10 w-full overflow-hidden rounded-lg bg-story-card text-story-ink">
+            {galleryImageSrc(story.mediaUrl) && <img src={galleryImageSrc(story.mediaUrl) ?? undefined} alt="" className="aspect-square w-full object-cover"/>}
+            <a href={story.targetUrl} target={story.targetUrl?.startsWith("/")?undefined:"_blank"} rel="noopener noreferrer" onPointerDown={e=>e.stopPropagation()} className="block px-6 py-5 text-xl font-semibold">{story.title}{story.badge&&<span className="mt-2 block text-sm">{story.badge}</span>}</a>
+          </article> : <article key={story.id} className="pointer-events-none max-h-full w-full overflow-y-auto animate-in fade-in zoom-in-95 duration-300">
             <div className="overflow-hidden rounded-[28px] bg-story-card text-story-ink shadow-2xl">
               <div className="bg-gradient-to-br from-story-ring to-story-ring-2 px-6 pb-6 pt-5 text-story-card">
                 <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest opacity-85">
                   <MessageCircleQuestion className="h-3.5 w-3.5" aria-hidden /> {promptLabel ?? t("pages.qa.story.anonymous")}
                 </p>
-                <p className="mt-2 break-words font-display text-2xl leading-snug">{story.body}</p>
+                <p className="mt-2 break-words font-display text-2xl leading-snug">{story.question}</p>
               </div>
               <p className="whitespace-pre-line break-words px-6 py-5 text-lg leading-relaxed">{story.answer}</p>
             </div>
-          </article>
+          </article>}
         </div>
 
         <a

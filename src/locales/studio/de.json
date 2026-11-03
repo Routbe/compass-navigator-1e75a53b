@@ -646,5 +646,18 @@
   "studio.grid.media.invalid": "Erlaubtes https-Bild oder eigene Datei verwenden.",
   "studio.grid.media.preview": "Vorschau",
   "studio.grid.media.caption": "Titel oder Beschreibung (optional)",
-  "studio.grid.media.alt": "Alternativtext (optional)"
+  "studio.grid.media.alt": "Alternativtext (optional)",
+  "presence.update": "Status aktualisieren",
+  "presence.write": "Text schreiben",
+  "presence.grid": "Profilinhalt teilen",
+  "presence.sent": "Status für 24 Stunden veröffentlicht",
+  "presence.pending": "Nicht bestätigt. Text lokal gespeichert; erneut versuchen.",
+  "presence.encoding": "Video vorbereiten",
+  "presence.shareFailed": "Teilen fehlgeschlagen",
+  "presence.share": "Als Story teilen",
+  "presence.download": "Video herunterladen",
+  "presence.noGrid": "Zuerst einen Link oder eine Karte auf dem Profil veröffentlichen.",
+  "presence.publish": "Für 24 Stunden posten",
+  "presence.retry": "Erneut versuchen",
+  "presence.discard": "Lokalen Entwurf löschen"
 }
