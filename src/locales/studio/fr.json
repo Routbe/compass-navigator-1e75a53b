@@ -659,5 +659,16 @@
   "presence.noGrid": "Publiez d’abord un lien ou une carte sur votre profil.",
   "presence.publish": "Publier pour 24 heures",
   "presence.retry": "Réessayer",
-  "presence.discard": "Supprimer le brouillon local"
+  "presence.discard": "Supprimer le brouillon local",
+  "presence.local": "Local — pas encore publié",
+  "presence.connected": "Connexion enregistrée",
+  "presence.connectFailed": "Échec ; vérifiez l’adresse et la clé",
+  "presence.disconnect": "Déconnecter",
+  "presence.encryptionMissing": "Stockage sécurisé non configuré.",
+  "presence.endpoint": "Adresse de destination",
+  "presence.credential": "Jeton API / mot de passe d’application / secret webhook",
+  "presence.connect": "Connecter",
+  "presence.broadcastRoot": "Partager automatiquement depuis mon profil principal",
+  "presence.broadcastFailed": "Non livré : {{count}}",
+  "presence.broadcastAlias": "Partager automatiquement depuis mon profil alias"
 }

@@ -21,7 +21,7 @@ function color(css: string): [number, number, number] {
   const bytes = sample.getImageData(0, 0, 1, 1).data;
   return [(bytes[0] ?? 0) / 255, (bytes[1] ?? 0) / 255, (bytes[2] ?? 0) / 255];
 }
-export function createProceduralCanvas(canvas: HTMLCanvasElement) {
+export function createProceduralCanvas(canvas: HTMLCanvasElement, theme: "aurora" | "glass" = "aurora") {
   const gl = canvas.getContext("webgl", { alpha: false, preserveDrawingBuffer: true, antialias: false });
   if (!gl) return null;
   const shader = (type: number, source: string) => {
@@ -47,8 +47,8 @@ export function createProceduralCanvas(canvas: HTMLCanvasElement) {
   const pos = gl.getAttribLocation(program, "position");
   gl.enableVertexAttribArray(pos); gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
   const styles = getComputedStyle(document.documentElement);
-  const a = color(`hsl(${styles.getPropertyValue("--story-ring")})`);
-  const b = color(`hsl(${styles.getPropertyValue("--story-ring-2")})`);
+  const a = color(`hsl(${styles.getPropertyValue(theme === "glass" ? "--story-ring-2" : "--story-ring")})`);
+  const b = color(`hsl(${styles.getPropertyValue(theme === "glass" ? "--story-ring" : "--story-ring-2")})`);
   gl.uniform3fv(gl.getUniformLocation(program, "u_a"), a);
   gl.uniform3fv(gl.getUniformLocation(program, "u_b"), b);
   let disposed = false;

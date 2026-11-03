@@ -26,7 +26,9 @@ export function QaStoryRing({ handle, space, displayName, avatarUrl, children }:
 }) {
   const { t } = useI18n();
   const {user}=useAuth();
-  const [pending,setPending]=useState<PresenceStory[]>([]);
+  const pendingScope=JSON.stringify([user?.id,handle?.toLowerCase(),space]);
+  const [pendingState,setPendingState]=useState<{scope:string;rows:PresenceStory[]}>({scope:'',rows:[]});
+  const pending=pendingState.scope===pendingScope?pendingState.rows:[];
   const qa = useQaPublic(handle, space);
   const presence = useQuery({ queryKey: presenceKey(space,handle ?? ""),queryFn:()=>getPublicPresence({data:{handle:handle ?? "",space}}).then(r=>r.stories),enabled:Boolean(handle),staleTime:60_000 });
   const [now, setNow] = useState<number | null>(null);
@@ -35,19 +37,19 @@ export function QaStoryRing({ handle, space, displayName, avatarUrl, children }:
   const stories = useMemo(() => {
     if(now===null)return [];
     if(presence.data)return activePresence([...presence.data,...pending.filter(p=>!presence.data.some(s=>s.id===p.id))],now);
-    return activeStories(qa.data?.answers ?? [],now).map(s=>({id:s.id,statusType:"qa_reply" as const,question:s.body,answer:s.answer,createdAt:s.answeredAt,expiresAt:s.storyUntil ?? new Date(Date.parse(s.answeredAt)+86400000).toISOString()}));
+    return activePresence([...activeStories(qa.data?.answers ?? [],now).map(s=>({id:s.id,statusType:"qa_reply" as const,question:s.body,answer:s.answer,prompt:s.prompt,createdAt:s.answeredAt,expiresAt:s.storyUntil ?? new Date(Date.parse(s.answeredAt)+86400000).toISOString()})),...pending],now);
   }, [qa.data,presence.data,now,pending]);
 
   useEffect(()=>{
-    setPending([]);if(!user || !handle)return;
+    let alive=true;setPendingState({scope:pendingScope,rows:[]});if(!user || !handle)return;
     const add=(input:StatusInput,createdAt:string)=>{if(input.space!==space||input.statusType!=="micro_text")return;
-      setPending(rows=>[...rows.filter(r=>r.id!==input.id),{id:input.id,statusType:"micro_text",...input.payload,createdAt,expiresAt:new Date(Date.parse(createdAt)+86400000).toISOString(),pending:true}]);};
-    void pendingStatuses(user.id).then(rows=>rows.filter(r=>r.handle===handle).forEach(r=>add(r.input,r.createdAt))).catch(()=>undefined);
+      setPendingState(state=>({scope:pendingScope,rows:[...(state.scope===pendingScope?state.rows:[]).filter(r=>r.id!==input.id),{id:input.id,statusType:"micro_text",...input.payload,createdAt,expiresAt:new Date(Date.parse(createdAt)+86400000).toISOString(),pending:true}]}));};
+    void pendingStatuses(user.id).then(rows=>{if(alive)rows.filter(r=>r.handle.toLowerCase()===handle.toLowerCase()).forEach(r=>add(r.input,r.createdAt));}).catch(()=>undefined);
     const onPending=(e:Event)=>{const d=(e as CustomEvent<{owner:string;handle:string;input:StatusInput}>).detail;if(d.owner===user.id && d.handle===handle)add(d.input,new Date().toISOString());};
-    const onConfirmed=(e:Event)=>setPending(rows=>rows.filter(r=>r.id!==(e as CustomEvent<{id:string}>).detail.id));
+    const onConfirmed=(e:Event)=>{const d=(e as CustomEvent<{owner:string;handle:string;space:string;id:string}>).detail;if(d.owner===user.id&&d.handle===handle&&d.space===space)setPendingState(state=>({...state,rows:state.rows.filter(r=>r.id!==d.id)}));};
     window.addEventListener("rout-presence-pending",onPending);window.addEventListener("rout-presence-confirmed",onConfirmed);
-    return()=>{window.removeEventListener("rout-presence-pending",onPending);window.removeEventListener("rout-presence-confirmed",onConfirmed);};
-  },[user?.id,handle,space]);
+    return()=>{alive=false;window.removeEventListener("rout-presence-pending",onPending);window.removeEventListener("rout-presence-confirmed",onConfirmed);};
+  },[user?.id,handle,space,pendingScope]);
 
   // Browser-only state after hydration: current time and what this visitor watched.
   useEffect(() => {

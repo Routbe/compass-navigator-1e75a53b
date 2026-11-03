@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { BroadcastSettings } from "./BroadcastSettings";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -182,6 +183,7 @@ export function IntegrationVault({ focus }: { focus?: string } = {}) {
 
   return (
     <div className="space-y-4">
+        <BroadcastSettings />
         <p className="text-sm text-muted-foreground">
           Koppel en verifieer een dienst één keer. Daarna gebruik je hem op elk profiel en in elk component, zonder opnieuw te verifiëren.
           {connectedCount > 0 && <> · <strong>{connectedCount} gekoppeld</strong></>}

@@ -14,7 +14,7 @@
   },
   "database": {
     "status": "connected_existing_neon",
-    "reason": "Existing ROUT Neon schema connected through guarded rout_app transport; social-grid 0184 migration applied and schema, RLS, privileges, and trigger verified. Other imported SQL remains unapplied."
+    "reason": "Existing ROUT Neon connected through guarded rout_app transport. Migrations 0184 social grid, 0185 ephemeral presence, 0186 broadcast queue and 0187 publication/consent boundaries applied; RLS and function rights verified. Other imported SQL remains source references."
   },
   "accounts": {
     "status": "blocked",
@@ -30,7 +30,7 @@
   },
   "verification": {
     "status": "public_flows_verified",
-    "tests_passed": 23,
+    "tests_passed": 40,
     "build": "OK",
     "desktop_phone": [
       "homepage",
@@ -41,7 +41,9 @@
     ],
     "authenticated_flows": "Not verified: no active imported ROUT cookie-session. Managed Cloud auth is a different account system.",
     "social_grid": "Isolated real-component desktop/phone checks confirm 3/2 columns, pinned ordering, destination edits, reorder controls, and localized media dialog; real image loading and authenticated save/publish remain unverified.",
-    "source_visual_comparison": "blocked by Vercel login"
+    "source_visual_comparison": "blocked by Vercel login",
+    "presence": "Isolated desktop/phone real-component viewer and composer checks passed: three status types, gestures/close, zero canvas leaks, no upload control, prepared 1080x1920 MP4. JSON-only endpoint rejects multipart/binary with 415. Authentic owner publish/readback and actual mobile OS share remain unverified.",
+    "broadcast": "Queue and visibility/expiry/consent tests passed; sealed settings implemented. External delivery and published waitUntil runtime remain unverified without provider authorization and ROUT session."
   },
   "cutover": {
     "status": "not_requested"

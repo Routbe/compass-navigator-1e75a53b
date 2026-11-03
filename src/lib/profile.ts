@@ -32,6 +32,9 @@ export interface ProfileBlock {
   contextTag?: BlockContextTag;
   /** Live component (`kind: "live"`, value = provider): which stats to show. */
   stats?: string[];
+  /** Omni presentation metadata stays on this same revisioned block. */
+  contentType?: "link" | "article" | "podcast" | "media";
+  kineticTheme?: "aurora" | "glass";
 }
 
 export type BlockVisibilityRule = "always_visible" | "hide_when_focus_mode" | "show_only_when_live";

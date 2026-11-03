@@ -1,9 +1,11 @@
 # Repository import
-- [ ] Audit imported status/Q&A, unified profile blocks, sharing and broadcasting against the new directives.
-- [ ] Implement text-only 24-hour presence with strict payload validation, existing publication/privacy boundaries, and unified block spotlights.
-- [ ] Implement fullscreen kinetic viewer, procedural backgrounds, local pending drafts, and native image/video sharing with honest capability handling.
-- [ ] Integrate composer in the existing Studio and Q&A flow; verify rules, rendering, expiry, and available end-to-end flows.
-- [ ] Implement open-network broadcasting with encrypted per-user credentials and durable delivery; provider setup may remain externally blocked.
+- [x] Audit imported status/Q&A, unified profile blocks, sharing and broadcasting; preserve Spotify, revisioned drafts and existing widgets.
+- [x] Implement text-only 24-hour presence with strict JSON validation, published-block references and owner-scoped Neon policies.
+- [x] Integrate fullscreen kinetic viewer, procedural backgrounds, isolated IndexedDB pending drafts and locally prepared native video sharing.
+- [x] Place composer in existing ProfileContentAccordion and add prepared video to Q&A sharing; verify component rendering and expiry rules.
+- [x] Implement encrypted open-network settings, per-canvas consent, transactional durable queue and publication/expiry checks before delivery.
+- [ ] Verify live provider delivery and published background execution — blocked by provider authorization, active ROUT session and deployment.
+- [ ] Verify actual Instagram/Snap OS share sheet — blocked by access to a real supported mobile device; browser video/file tests pass.
 - [x] Connect Neon and inspect the actual runtime role and schema without altering existing data.
 - [x] Integrate social grid management in the existing profile studio with localized copy, manual edits, pinning, ordering, and video indicators.
 - [x] Apply and verify the owner-scoped Neon grid index; preserve published profile rendering; 23 targeted tests passed.

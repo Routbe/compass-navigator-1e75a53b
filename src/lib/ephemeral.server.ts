@@ -25,5 +25,7 @@ export async function createPresence(owner: string, input: StatusInput): Promise
     on conflict(id) do nothing returning id,created_at,expires_at` as Record<string,unknown>[];
   const row=rows[0] ?? (await sql`select id,created_at,expires_at from public.ephemeral_statuses where id=${data.id} and user_id=${owner}` as Record<string,unknown>[])[0];
   if(!row) throw new Error("status_not_saved");
+  const {deliverBroadcasts}=await import("./broadcast.server");const {registerBackgroundTask}=await import("./background-task.server");
+  const task=deliverBroadcasts(owner).catch(()=>undefined);if(!registerBackgroundTask(task))await task;
   return {id:String(row["id"]),statusType:data.statusType,...data.payload,createdAt:new Date(String(row["created_at"])).toISOString(),expiresAt:new Date(String(row["expires_at"])).toISOString()};
 }

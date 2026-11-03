@@ -17,10 +17,14 @@ import { ProceduralStoryBackground } from "./ProceduralStoryBackground";
 export function PresenceComposer({owner,handle,space,blocks}:{owner:string;handle:string;space:"root"|"alias";blocks:ProfileBlock[]}) {
  const {t}=useI18n();const query=useQueryClient();const post=useServerFn(postPresence);
  const [open,setOpen]=useState(false),[mode,setMode]=useState<"text"|"grid">("text"),[text,setText]=useState("");
- const [selected,setSelected]=useState(""),[busy,setBusy]=useState(false),[pending,setPending]=useState<StatusInput[]>([]);
+ const [selected,setSelected]=useState(""),[busy,setBusy]=useState(false);
+ const scope=JSON.stringify([owner,handle,space]);
+ const [pendingState,setPendingState]=useState<{scope:string;rows:StatusInput[]}>({scope:'',rows:[]});
+ const pending=pendingState.scope===scope?pendingState.rows:[];
+ const setPending=(update:(rows:StatusInput[])=>StatusInput[])=>setPendingState(state=>({scope,rows:update(state.scope===scope?state.rows:[])}));
  const [file,setFile]=useState<File|null>(null),[encoding,setEncoding]=useState(false);
  const candidates=spotlightCandidates(blocks);
- useEffect(()=>{void pendingStatuses(owner).then(rows=>setPending(rows.filter(r=>r.input.space===space).map(r=>r.input))).catch(()=>undefined);},[owner,space]);
+ useEffect(()=>{let alive=true;void pendingStatuses(owner).then(rows=>{if(alive)setPendingState({scope,rows:rows.filter(r=>r.input.space===space&&r.handle===handle).map(r=>r.input)});}).catch(()=>undefined);return()=>{alive=false;};},[owner,handle,space,scope]);
  // Prepare before the sharing click: recording for 3 seconds cannot preserve transient OS activation.
  useEffect(()=>{setFile(null);if(!open || mode!=="text" || !text.trim() || [...text].length>280) return;
   const controller=new AbortController();let alive=true;const timeout=setTimeout(()=>{setEncoding(true);void import("@/lib/qa/story-video").then(m=>m.renderPresenceVideo(text,controller.signal)).then(f=>{if(alive)setFile(f);}).catch(()=>undefined).finally(()=>{if(alive)setEncoding(false);});},600);
@@ -29,10 +33,10 @@ export function PresenceComposer({owner,handle,space,blocks}:{owner:string;handl
  const send=async(input:StatusInput)=>{
   setBusy(true);
   try {
-   await savePending(owner,handle,input);setPending(rows=>[...rows.filter(r=>r.id!==input.id),input]);
+   await savePending(owner,handle,input).catch(()=>undefined);setPending(rows=>[...rows.filter(r=>r.id!==input.id),input]);
    window.dispatchEvent(new CustomEvent("rout-presence-pending",{detail:{owner,handle,space,input}}));
-   await post({data:input});await removePending(owner,input.id);setPending(rows=>rows.filter(r=>r.id!==input.id));
-   await query.invalidateQueries({queryKey:presenceKey(space,handle)});window.dispatchEvent(new CustomEvent("rout-presence-confirmed",{detail:{id:input.id}}));
+   await post({data:input});await removePending(owner,input.id).catch(()=>undefined);setPending(rows=>rows.filter(r=>r.id!==input.id));
+   await query.invalidateQueries({queryKey:presenceKey(space,handle)});window.dispatchEvent(new CustomEvent("rout-presence-confirmed",{detail:{owner,handle,space,id:input.id}}));
    setOpen(false);setText("");toast.success(t("presence.sent"));
   } catch {toast.error(t("presence.pending"));}finally{setBusy(false);}
  };
@@ -42,7 +46,7 @@ export function PresenceComposer({owner,handle,space,blocks}:{owner:string;handl
  return <>
   <Button variant="outline" className="w-full justify-start gap-2" onClick={()=>setOpen(true)}><Radio className="h-4 w-4"/>{t("presence.update")}</Button>
   <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md"><DialogHeader><DialogTitle>{t("presence.update")}</DialogTitle></DialogHeader>
-   <div className="flex gap-2"><Button variant={mode==="text"?"default":"outline"} onClick={()=>setMode("text")}>{t("presence.write")}</Button><Button variant={mode==="grid"?"default":"outline"} onClick={()=>setMode("grid")}>{t("presence.grid")}</Button></div>
+   <div className="grid grid-cols-2 gap-2"><Button className="h-auto whitespace-normal" variant={mode==="text"?"default":"outline"} onClick={()=>setMode("text")}>{t("presence.write")}</Button><Button className="h-auto whitespace-normal" variant={mode==="grid"?"default":"outline"} onClick={()=>setMode("grid")}>{t("presence.grid")}</Button></div>
    {mode==="text"?<>
     <div className="relative mx-auto flex aspect-[9/16] max-h-64 w-36 items-center justify-center overflow-hidden rounded-lg bg-story-viewport text-story-card"><ProceduralStoryBackground/><p className="relative break-words px-3 text-center text-sm font-semibold">{text}</p></div>
     <Textarea aria-label={t("presence.write")} value={text} onChange={e=>setText(e.target.value)} rows={4}/><span className="text-xs text-muted-foreground">{[...text].length}/280</span>

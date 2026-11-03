@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "react";
 import { createProceduralCanvas } from "@/lib/qa/procedural-canvas";
 
-export function ProceduralStoryBackground({ paused = false }: { paused?: boolean }) {
+export function ProceduralStoryBackground({ paused = false, theme = "aurora" }: { paused?: boolean; theme?: "aurora" | "glass" }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const engine = createProceduralCanvas(canvas);
+    const engine = createProceduralCanvas(canvas, theme);
     if (!engine) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     let frame = 0; let elapsed = 0; let previous = performance.now();
@@ -33,6 +33,6 @@ export function ProceduralStoryBackground({ paused = false }: { paused?: boolean
       cancelAnimationFrame(frame); engine.dispose();
       window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", resume); reduce.removeEventListener("change", resume);
     };
-  }, []);
+  }, [theme]);
   return <canvas ref={ref} aria-hidden className="pointer-events-none absolute inset-0 h-full w-full opacity-60" />;
 }

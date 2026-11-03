@@ -152,10 +152,13 @@ export async function myQaInsights(ownerId: string, space: QaSpace | null): Prom
 export async function answerQuestion(ownerId: string, id: string, raw: string, publish: boolean): Promise<"ok" | "invalid"> {
   const answer = normalizeText(raw, ANSWER_MAX);
   if (!answer) return "invalid";
-  await sql`update public.profile_questions
+  const rows=await sql`update public.profile_questions
                set answer = ${answer}, published = ${publish}, answered_at = now(),
                    story_until = case when ${publish}::boolean then now() + interval '24 hours' else null end
-             where id = ${id} and owner_id = ${ownerId}`;
+             where id = ${id} and owner_id = ${ownerId} returning id,space,body,is_quarantined` as Record<string,unknown>[];
+  const row=rows[0];if(!row)return "invalid";
+  if(publish && row["is_quarantined"]!==true){const {deliverBroadcasts}=await import("./broadcast.server");const {registerBackgroundTask}=await import("./background-task.server");
+    const task=deliverBroadcasts(ownerId).catch(()=>undefined);if(!registerBackgroundTask(task))await task;}
   return "ok";
 }
 
