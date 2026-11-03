@@ -1244,23 +1244,16 @@ export function ProfileEditor({ variant = "verified", pageMode = "profile", onPa
                 <GuestbookAccordion enabled={prefs.guestbookEnabled} onEnabledChange={(v) => setPref("guestbookEnabled", v)} />
 
                 {/* 🏅 Badges: eigen map binnen Links & componenten, met schakelaar. */}
-                <details className="space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
-                  <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium"><StudioSectionIcon kind="badges" />{t("studio.badgesFolder").replace(/^\p{Extended_Pictographic}\s*/u, "")}</summary>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {t("studio.editor.badgesHelp")}
-                      </p>
-                    </div>
-                    <Switch
-                      aria-label={t("studio.editor.badgeShow")}
-                      checked={prefs.badgeShowcaseVisible}
-                      onCheckedChange={(v) => setPref("badgeShowcaseVisible", v)}
-                    />
-                  </div>
+                <StudioToggleCard
+                  icon={<StudioSectionIcon kind="badges" />}
+                  title={t("studio.badgesFolder").replace(/^\p{Extended_Pictographic}\s*/u, "")}
+                  subtitle={t("studio.editor.badgesHelp")}
+                  checked={prefs.badgeShowcaseVisible}
+                  onCheckedChange={(v) => setPref("badgeShowcaseVisible", v)}
+                >
                   <BadgesPanel />
                   <BadgeActivityPanel />
-                </details>
+                </StudioToggleCard>
               </ProfileContentAccordion>
 
               {/* Favorieten horen bij je links: film, serie, boek, muziek … */}
