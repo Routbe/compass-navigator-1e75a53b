@@ -1,4 +1,5 @@
 import { useI18n } from "@/lib/i18n";
+import { PresenceComposer } from "@/components/qa/PresenceComposer";
 import { FeedbackPanel } from "@/components/studio/FeedbackPanel";
 import { FediverseProfileField } from "@/components/dashboard/FediverseProfileField";
 import { EventsPanel } from "@/components/studio/EventsPanel";
@@ -1229,6 +1230,7 @@ export function ProfileEditor({ variant = "verified", pageMode = "profile", onPa
                   }
                 }}
               >
+                {!isWorkspace && user && <PresenceComposer owner={user.id} handle={normalized || handle} space={alias ? "alias" : "root"} blocks={blocks} />}
                 {!isWorkspace && (
                   <QuestionsInboxAccordion
                     space={alias ? "alias" : "root"}

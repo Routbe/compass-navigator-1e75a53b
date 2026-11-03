@@ -24,8 +24,9 @@ export function activePresence(stories: PresenceStory[], now: number): PresenceS
     .sort((a,b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
 }
 /** Spotlight candidates are the existing blocks, not a second library. */
-export function spotlightCandidates(blocks: ProfileBlock[], now = Date.now()) {
-  return scheduledBlocks(blocks, now).flatMap(block => {
+export type SpotlightCandidate = { blockId: string; itemId?: string; title: string; targetUrl: string; mediaUrl?: string };
+export function spotlightCandidates(blocks: ProfileBlock[], now = Date.now()): SpotlightCandidate[] {
+  return scheduledBlocks(blocks, now).flatMap<SpotlightCandidate>(block => {
     if (block.kind === "social_grid") return parseSocialGridConfig(block.value).items.flatMap(item => item.targetUrl ? [{ blockId: block.id, itemId: item.id, title: item.caption || block.label, targetUrl: item.targetUrl, mediaUrl: item.mediaUrl }] : []);
     const href = normalizeSocialGridTarget(blockHref(block));
     return href ? [{ blockId: block.id, itemId: undefined, title: block.label, targetUrl: href, mediaUrl: block.thumbnailUrl }] : [];

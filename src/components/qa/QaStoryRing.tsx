@@ -3,6 +3,9 @@ import { useI18n } from "@/lib/i18n";
 import { activeStories, hasUnseen, seenStorageKey } from "@/lib/qa/story";
 import { useQaPublic, type QaSpace } from "./useQaPublic";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicPresence } from "@/lib/ephemeral.functions";
+import { activePresence, presenceKey } from "@/lib/presence";
 
 const QaStoryViewer = lazy(() => import("./QaStoryViewer").then((m) => ({ default: m.QaStoryViewer })));
 
@@ -21,10 +24,15 @@ export function QaStoryRing({ handle, space, displayName, avatarUrl, children }:
 }) {
   const { t } = useI18n();
   const qa = useQaPublic(handle, space);
+  const presence = useQuery({ queryKey: presenceKey(space,handle ?? ""),queryFn:()=>getPublicPresence({data:{handle:handle ?? "",space}}).then(r=>r.stories),enabled:Boolean(handle),staleTime:60_000 });
   const [now, setNow] = useState<number | null>(null);
   const [seenAt, setSeenAt] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const stories = useMemo(() => (now === null || !qa.data ? [] : activeStories(qa.data.answers, now)), [qa.data, now]);
+  const stories = useMemo(() => {
+    if(now===null)return [];
+    if(presence.data)return activePresence(presence.data,now);
+    return activeStories(qa.data?.answers ?? [],now).map(s=>({id:s.id,statusType:"qa_reply" as const,question:s.body,answer:s.answer,createdAt:s.answeredAt,expiresAt:s.storyUntil ?? new Date(Date.parse(s.answeredAt)+86400000).toISOString()}));
+  }, [qa.data,presence.data,now]);
 
   // Browser-only state after hydration: current time and what this visitor watched.
   useEffect(() => {
@@ -41,14 +49,14 @@ export function QaStoryRing({ handle, space, displayName, avatarUrl, children }:
 
   const close = useCallback(() => {
     setOpen(false);
-    const latest = stories[stories.length - 1]?.answeredAt ?? null;
+    const latest = stories[stories.length - 1]?.createdAt ?? null;
     if (!latest || !handle) return;
     setSeenAt(latest);
     try { window.localStorage.setItem(seenStorageKey(space, handle), latest); } catch { /* storage blocked */ }
   }, [stories, handle, space]);
 
   if (!handle || stories.length === 0) return <>{children}</>;
-  const unseen = hasUnseen(stories, seenAt);
+  const unseen = !seenAt || stories.some(s=>Date.parse(s.createdAt)>Date.parse(seenAt));
   const name = displayName || `@${handle}`;
 
   return (
