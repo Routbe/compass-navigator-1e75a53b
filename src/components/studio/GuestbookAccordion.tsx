@@ -6,7 +6,6 @@ import { Pin, PinOff, Trash2 } from "lucide-react";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { deleteGuestbookNote, getMyGuestbook, pinGuestbookNote } from "@/lib/guestbook.functions";
 import { GUESTBOOK_PIN_LIMIT } from "@/lib/guestbook-rules";
-import { Switch } from "@/components/ui/switch";
 import { StudioSectionIcon } from "./StudioSectionIcon";
 import { StudioToggleCard } from "./StudioToggleCard";
 import { Button } from "@/components/ui/button";

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, ShieldCheck, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QA_PROMPT_CUSTOM_MAX, QA_PROMPT_KEYS, promptHeadline, type QaPromptKey } from "@/lib/qa/prompts";
@@ -39,15 +38,6 @@ export function QuestionsInboxAccordion({ space, handle, displayName, avatarUrl,
   const keys: QaPromptKey[] = [...QA_PROMPT_KEYS, "custom"];
   const shareTarget = useMemo(() => (shareOpen ? { kind: "prompt" as const, prompt: headline } : null), [shareOpen, headline]);
 
-  const row = (label: string, help: string, checked: boolean, onChange: (v: boolean) => void, disabled = false) => (
-    <label className={cn("flex items-center justify-between gap-3 rounded-xl border border-border p-3 text-sm", disabled && "opacity-60")}>
-      <span className="min-w-0">
-        <span className="block font-medium">{label}</span>
-        <span className="block text-xs text-muted-foreground">{help}</span>
-      </span>
-      <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} aria-label={label} />
-    </label>
-  );
 
   return (
     <>
