@@ -1,3 +1,4 @@
+import { DEFAULT_VISIT_CUSTOM, normalizeVisitCustom, type VisitEffectCustom } from "./visit-effect-custom";
 import { cleanCustomPrompt, resolvePromptKey } from "@/lib/qa/prompts";
 import {
   normalizeBubbleFont,
@@ -239,6 +240,8 @@ export interface ProfileDisplayPrefs {
   vcardOrg: string | null;
   /** Entree-effect voor bezoekers (`none` = uit). */
   visitEffect: VisitEffect;
+  /** Eigen emoji-bezoekeffect; wint van `visitEffect` als `enabled`. */
+  visitEffectCustom: VisitEffectCustom;
   /** Favoriete films, series, boeken … met (eigen of opgehaalde) afbeelding. */
   favorites: ProfileFavorite[];
   /** Vorm van de avatar op het publieke profiel. */
@@ -326,6 +329,7 @@ export const DEFAULT_DISPLAY_PREFS: ProfileDisplayPrefs = {
   vcardPhone: null,
   vcardOrg: null,
   visitEffect: "none",
+  visitEffectCustom: DEFAULT_VISIT_CUSTOM,
   favorites: [],
   avatarShape: "circle",
   locationBadge: null,
@@ -555,6 +559,7 @@ export function parseDisplayPrefs(raw: unknown): ProfileDisplayPrefs {
     vcardPhone: textOrNull(r["vcardPhone"], 40),
     vcardOrg: textOrNull(r["vcardOrg"], 80),
     visitEffect: normalizeVisitEffect(r["visitEffect"]),
+    visitEffectCustom: normalizeVisitCustom(r["visitEffectCustom"]),
     favorites: normalizeFavorites(r["favorites"]),
     avatarShape: oneOf(
       r["avatarShape"],
