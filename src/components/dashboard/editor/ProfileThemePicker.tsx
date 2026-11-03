@@ -50,6 +50,8 @@ interface ProfileThemePickerProps {
   prefs: ProfileDisplayPrefs;
   setPref: <K extends keyof ProfileDisplayPrefs>(key: K, value: ProfileDisplayPrefs[K]) => void;
   verified: boolean;
+  /** Profielblokken: bepalen welke onderdelen apart te stijlen zijn. */
+  blocks?: readonly { kind: string }[];
 }
 
 /**
@@ -72,8 +74,18 @@ export function ProfileThemePicker({
   prefs,
   setPref,
   verified,
+  blocks = [],
 }: ProfileThemePickerProps) {
   const [scope, setScope] = useState<ThemeScope>("all");
+  const has = (...kinds: string[]) => blocks.some((b) => kinds.includes(b.kind));
+  const allowedScopes: ThemeScope[] = [
+    "all", "links", "socials",
+    ...(has("booking", "booking_request", "calendly") ? (["booking"] as const) : []),
+    ...(prefs.guestbookEnabled || has("widget:guestbook") ? (["board"] as const) : []),
+    ...(prefs.presence !== "none" || has("live", "spotify") ? (["presence"] as const) : []),
+    ...(prefs.questionsEnabled || has("widget:questions") ? (["questions"] as const) : []),
+  ];
+  const activeScope = allowedScopes.includes(scope) ? scope : "all";
   // AVATAR_FRAMES is currently unused directly here (delegated to AvatarFramePicker)
   // but kept imported for parity with legacy usage / future presets.
   void AVATAR_FRAMES;
@@ -170,10 +182,10 @@ export function ProfileThemePicker({
         value="buttons_typography"
         className="rounded-2xl border border-border bg-card px-4 sm:px-5"
       >
-        <div className="flex flex-wrap items-center gap-2" data-tour="studio-button-style"><AccordionTrigger className="min-w-0 flex-1 hover:no-underline"><span className="flex min-w-0 items-center gap-2 text-base font-medium"><StudioSectionIcon kind="typography" />Knoppen &amp; Typografie</span></AccordionTrigger><ThemeScopeSelect scope={scope} onChange={setScope} /></div>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2" data-tour="studio-button-style"><AccordionTrigger className="min-w-0 hover:no-underline"><span className="flex min-w-0 items-center gap-2 text-base font-medium"><StudioSectionIcon kind="typography" /><span className="truncate">Knoppen &amp; Typografie</span></span></AccordionTrigger><ThemeScopeSelect scope={activeScope} onChange={setScope} allowedScopes={allowedScopes} /></div>
         <AccordionContent className="space-y-4 pb-5">
-          <ScopedThemeBar prefs={prefs} setPref={setPref} scope={scope} showTypography={scope !== "all"} />
-          {scope === "all" && <>
+          <ScopedThemeBar prefs={prefs} setPref={setPref} scope={activeScope} showTypography={activeScope !== "all"} />
+          {activeScope === "all" && <>
           <div className="flex min-w-0 items-center gap-2 pt-2">
             <p className="input-label flex items-center gap-1.5">Typografie <ProPill /></p>
             <CustomizeButton open={prefs.typographyCustom} onToggle={() => setPref("typographyCustom", !prefs.typographyCustom)} label="Typografie aanpassen" controls="type-advanced" />
@@ -262,12 +274,12 @@ export function ProfileThemePicker({
             prefs={prefs}
             setPref={setPref}
             theme={theme}
-            extra={
-              <VisitEffectPicker
-                value={prefs.visitEffect}
-                onChange={(id) => setPref("visitEffect", id)}
-              />
-            }
+          />
+          <VisitEffectPicker
+            value={prefs.visitEffect}
+            onChange={(id) => setPref("visitEffect", id)}
+            custom={prefs.visitEffectCustom}
+            onCustomChange={(next) => setPref("visitEffectCustom", next)}
           />
           <p className="input-label pt-2">Banner</p>
           <div className="flex flex-wrap gap-2">

@@ -1368,6 +1368,7 @@ export function ProfileEditor({ variant = "verified", pageMode = "profile", onPa
                 prefs={prefs}
                 setPref={setPref}
                 verified={verified}
+                blocks={blocks}
               />
               <LayerStudioAccordion
                 value={prefs.designLayers}
