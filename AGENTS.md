@@ -14,3 +14,4 @@
 - Keep managed project metadata, generated integrations, route-tree generation, and repository connection local to this project; source import must not copy another project identity.
 - Treat db/ and drizzle/ as unapplied source references until a reviewed migration maps accounts and access boundaries to the destination; importing files does not migrate live records or credentials.
 - Retain the imported cookie-session middleware without adding the generated bearer attacher; the retained account system does not use Cloud Auth yet.
+- Match the imported source's compiler compatibility settings while retaining strict null checks; unrelated source rewrites would compromise import fidelity.
