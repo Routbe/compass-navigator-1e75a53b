@@ -124,7 +124,7 @@ export function QaStoryViewer({ stories, handle, space, displayName, avatarUrl, 
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{name}</p>
-            <p className="text-xs opacity-70">{relativeTime(story.createdAt, locale)}</p>
+            <p className="text-xs opacity-70">{story.pending ? t("presence.local") : relativeTime(story.createdAt, locale)}</p>
           </div>
           <Button variant="ghost" size="icon"
             ref={closeRef}

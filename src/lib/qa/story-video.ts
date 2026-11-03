@@ -35,7 +35,7 @@ export async function renderPresenceVideo(text:string, signal?:AbortSignal):Prom
    recorder.onerror=()=>reject(new Error("recording_failed"));
    recorder.onstop=()=>{signal?.removeEventListener("abort",abort);if(aborted) reject(new DOMException("Cancelled","AbortError"));else {const type=mime.startsWith("video/mp4")?"video/mp4":"video/webm";try {resolve(storyFile(new Blob(chunks,{type}),`rout-story.${type.endsWith("mp4")?"mp4":"webm"}`));}catch(e){reject(e);}}};
    const start=performance.now();const tick=(time:number)=>{draw(Math.min(STORY_VIDEO_MS,time-start)/1000);if(time-start<STORY_VIDEO_MS && !aborted) frame=requestAnimationFrame(tick);};
-   recorder.start();frame=requestAnimationFrame(tick);timer=window.setTimeout(()=>{if(recorder.state!=="inactive") recorder.stop();},STORY_VIDEO_MS);
+   recorder.start();if(signal?.aborted){abort();return;}frame=requestAnimationFrame(tick);timer=window.setTimeout(()=>{if(recorder.state!=="inactive") recorder.stop();},STORY_VIDEO_MS);
   });
  } finally {cancelAnimationFrame(frame);clearTimeout(timer);stream.getTracks().forEach(t=>t.stop());engine.dispose();}
 }

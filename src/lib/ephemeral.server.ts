@@ -8,8 +8,9 @@ export async function publicPresence(handle: string, space: string): Promise<Pre
   const raw=rows[0]?.["stories"];
   const stories=(typeof raw==="string" ? JSON.parse(raw) : raw) as PresenceStory[] | null;
   return (stories ?? []).flatMap(s => {
-    if(s.statusType==="omni_drop") { const targetUrl=normalizeSocialGridTarget(s.targetUrl ?? "");return targetUrl ? [{...s,targetUrl}] : []; }
-    return [{...s,createdAt:new Date(s.createdAt).toISOString(),expiresAt:new Date(s.expiresAt).toISOString()}];
+    const normalized={...s,createdAt:new Date(s.createdAt).toISOString(),expiresAt:new Date(s.expiresAt).toISOString()};
+    if(s.statusType==="omni_drop") { const targetUrl=normalizeSocialGridTarget(s.targetUrl ?? "");return targetUrl ? [{...normalized,targetUrl}] : []; }
+    return [normalized];
   });
 }
 export async function createPresence(owner: string, input: StatusInput): Promise<PresenceStory> {

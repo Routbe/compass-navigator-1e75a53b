@@ -5,7 +5,9 @@ import { useQaPublic, type QaSpace } from "./useQaPublic";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getPublicPresence } from "@/lib/ephemeral.functions";
-import { activePresence, presenceKey } from "@/lib/presence";
+import { activePresence, presenceKey, type PresenceStory, type StatusInput } from "@/lib/presence";
+import { useAuth } from "@/hooks/useAuth";
+import { pendingStatuses } from "@/lib/presence-local";
 
 const QaStoryViewer = lazy(() => import("./QaStoryViewer").then((m) => ({ default: m.QaStoryViewer })));
 
@@ -23,6 +25,8 @@ export function QaStoryRing({ handle, space, displayName, avatarUrl, children }:
   children: ReactNode;
 }) {
   const { t } = useI18n();
+  const {user}=useAuth();
+  const [pending,setPending]=useState<PresenceStory[]>([]);
   const qa = useQaPublic(handle, space);
   const presence = useQuery({ queryKey: presenceKey(space,handle ?? ""),queryFn:()=>getPublicPresence({data:{handle:handle ?? "",space}}).then(r=>r.stories),enabled:Boolean(handle),staleTime:60_000 });
   const [now, setNow] = useState<number | null>(null);
@@ -30,9 +34,20 @@ export function QaStoryRing({ handle, space, displayName, avatarUrl, children }:
   const [open, setOpen] = useState(false);
   const stories = useMemo(() => {
     if(now===null)return [];
-    if(presence.data)return activePresence(presence.data,now);
+    if(presence.data)return activePresence([...presence.data,...pending.filter(p=>!presence.data.some(s=>s.id===p.id))],now);
     return activeStories(qa.data?.answers ?? [],now).map(s=>({id:s.id,statusType:"qa_reply" as const,question:s.body,answer:s.answer,createdAt:s.answeredAt,expiresAt:s.storyUntil ?? new Date(Date.parse(s.answeredAt)+86400000).toISOString()}));
-  }, [qa.data,presence.data,now]);
+  }, [qa.data,presence.data,now,pending]);
+
+  useEffect(()=>{
+    setPending([]);if(!user || !handle)return;
+    const add=(input:StatusInput,createdAt:string)=>{if(input.space!==space||input.statusType!=="micro_text")return;
+      setPending(rows=>[...rows.filter(r=>r.id!==input.id),{id:input.id,statusType:"micro_text",...input.payload,createdAt,expiresAt:new Date(Date.parse(createdAt)+86400000).toISOString(),pending:true}]);};
+    void pendingStatuses(user.id).then(rows=>rows.filter(r=>r.handle===handle).forEach(r=>add(r.input,r.createdAt))).catch(()=>undefined);
+    const onPending=(e:Event)=>{const d=(e as CustomEvent<{owner:string;handle:string;input:StatusInput}>).detail;if(d.owner===user.id && d.handle===handle)add(d.input,new Date().toISOString());};
+    const onConfirmed=(e:Event)=>setPending(rows=>rows.filter(r=>r.id!==(e as CustomEvent<{id:string}>).detail.id));
+    window.addEventListener("rout-presence-pending",onPending);window.addEventListener("rout-presence-confirmed",onConfirmed);
+    return()=>{window.removeEventListener("rout-presence-pending",onPending);window.removeEventListener("rout-presence-confirmed",onConfirmed);};
+  },[user?.id,handle,space]);
 
   // Browser-only state after hydration: current time and what this visitor watched.
   useEffect(() => {

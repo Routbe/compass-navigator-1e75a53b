@@ -16,3 +16,5 @@
 - Retain the imported cookie-session middleware without adding the generated bearer attacher; the retained account system does not use Cloud Auth yet.
 - Match the imported source's compiler compatibility settings while retaining strict null checks; unrelated source rewrites would compromise import fidelity.
 - Social grid edits use the shared profile block editor and revisioned drafts; social_grid_items is an owner-only synchronized index, while public hubs render published snapshots to prevent draft leaks.
+- Ephemeral presence is isolated from Spotify presence functions; only text and existing published-block references enter ephemeral_statuses, with fixed server-enforced expiry and rout_qa_owner-gated public reads. Why: no duplicate content library, media uploads, or draft visibility leaks.
+- Native story video is generated locally before the share click using the procedural canvas and a text composite; native share receives the prepared file synchronously. Why: a three-second recording cannot preserve transient mobile share activation.
