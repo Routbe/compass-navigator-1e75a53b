@@ -13,8 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 
 /** Scrim and icon colours sit on top of a photo, so they do not follow the profile theme. */
-const SCRIM: CSSProperties = { background: "linear-gradient(to top, rgb(0 0 0 / 0.68), rgb(0 0 0 / 0) 70%)", color: "rgb(255 255 255)" };
-const ICON: CSSProperties = { color: "rgb(255 255 255)", filter: "drop-shadow(0 1px 2px rgb(0 0 0 / 0.55))" };
 
 function Tile({ item }: { item: SocialGridItem }) {
   const { t } = useTranslation();
@@ -49,11 +47,11 @@ function Tile({ item }: { item: SocialGridItem }) {
         />
       )}
       {item.isVideo && (
-        <Clapperboard className="absolute right-2 top-2 h-4 w-4" style={ICON} aria-label={t("studio.grid.videoBadge")} />
+        <Clapperboard className="social-grid-icon absolute right-2 top-2 h-4 w-4" aria-label={t("studio.grid.videoBadge")} />
       )}
-      {item.pinned && <Pin className="absolute left-2 top-2 h-3.5 w-3.5" style={ICON} aria-label={t("studio.grid.pinned")} />}
+      {item.pinned && <Pin className="social-grid-icon absolute left-2 top-2 h-3.5 w-3.5" aria-label={t("studio.grid.pinned")} />}
       {showCaption && (
-        <span className="absolute inset-x-0 bottom-0 line-clamp-2 px-2 pb-2 pt-6 text-left text-[11px] font-medium leading-snug" style={SCRIM}>
+        <span className="social-grid-caption absolute inset-x-0 bottom-0 line-clamp-2 px-2 pb-2 pt-6 text-left text-[11px] font-medium leading-snug">
           {item.caption}
         </span>
       )}
@@ -80,7 +78,7 @@ export function SocialGridCard({ config, style }: { config: SocialGridConfig; st
   return (
     <section
       style={style}
-      className="w-full select-none overflow-hidden p-3 text-left [touch-action:manipulation] sm:p-4"
+      className="social-grid-section w-full select-none overflow-hidden p-3 text-left [touch-action:manipulation] sm:p-4"
     >
       {config.title.trim() !== "" && <h3 className="mb-3 px-1 text-sm font-semibold tracking-tight">{config.title}</h3>}
       <ul className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2">

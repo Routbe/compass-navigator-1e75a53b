@@ -172,7 +172,7 @@ type WorkspaceCanvas = { workspaceId: string; name: string; slug: string; role: 
  * Four fixed tabs (links, design, analytics, settings) with a live mobile
  * preview alongside, fully decoupled from the QR generator.
  */
-export function ProfileEditor({ variant = "verified", pageMode = "profile", onPagesChange, workspaceSlug }: { variant?: ProfileVariant; pageMode?: "profile" | "tip" | "qa"; onPagesChange?: (pages: { tipEnabled: boolean; qaEnabled: boolean; handle: string }) => void; workspaceSlug?: string } = {}) {
+export function ProfileEditor({ variant = "verified", pageMode = "profile", onPagesChange, workspaceSlug, initialGrid = false }: { variant?: ProfileVariant; pageMode?: "profile" | "tip" | "qa"; onPagesChange?: (pages: { tipEnabled: boolean; qaEnabled: boolean; handle: string }) => void; workspaceSlug?: string; initialGrid?: boolean } = {}) {
   const { t } = useI18n();
   const { user } = useAuth();
   const { style: rawUrlStyle, save: saveUrlStylePref } = useUrlStyle();
@@ -262,6 +262,15 @@ export function ProfileEditor({ variant = "verified", pageMode = "profile", onPa
   const setPref = <K extends keyof ProfileDisplayPrefs>(key: K, value: ProfileDisplayPrefs[K]) =>
     setPrefs((p) => ({ ...p, [key]: value }));
   const [blocks, setBlocks] = useState<ProfileBlock[]>([]);
+  const gridEntryOpened = useRef(false);
+  useEffect(() => {
+    if (!initialGrid || loading || loadError || gridEntryOpened.current) return;
+    gridEntryOpened.current = true;
+    const existing = blocks.find((block) => block.kind === "social_grid");
+    const id = existing?.id ?? newBlockId();
+    if (!existing) setBlocks((list) => [...list, { id, kind: "social_grid", label: t("studio.grid.defaultTitle"), value: JSON.stringify({ title: "", items: [] }) }]);
+    setOpenBlock(id);
+  }, [initialGrid, loading, loadError, blocks, t]);
   const [verified, setVerified] = useState(false);
   useEffect(() => {
     if (alias || !verified) return;
@@ -844,7 +853,7 @@ export function ProfileEditor({ variant = "verified", pageMode = "profile", onPa
   };
 
   const addBlock = (kind: string, value = "") => {
-    const label = kind === "feedback" ? t("feedback.title") : isProfileSectionKind(kind)
+    const label = kind === "social_grid" ? t("studio.grid.defaultTitle") : kind === "feedback" ? t("feedback.title") : isProfileSectionKind(kind)
       ? PROFILE_SECTION_LABELS[kind]
       : kind === "live"
         ? integrationById(value)?.label
@@ -1172,7 +1181,7 @@ export function ProfileEditor({ variant = "verified", pageMode = "profile", onPa
           {tab === "links" && (
             // Leaving a link title or URL field saves straight away.
             <div onBlurCapture={() => flushRef.current()}>
-            <Accordion type="single" collapsible className="space-y-3">
+            <Accordion type="single" collapsible defaultValue={initialGrid ? "components_list" : undefined} className="space-y-3">
               <ProfileBasicInfoAccordion
                 variant={variant}
                 displayName={displayName}

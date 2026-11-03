@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { type Dispatch, type ReactNode, type SetStateAction, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, LayoutGrid } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ProfileLinksManager } from "@/components/dashboard/editor/ProfileLinksManager";
 import { AddComponentModal, type WidgetId } from "@/components/studio/AddComponentModal";
@@ -76,6 +77,13 @@ export function ProfileContentAccordion({
           handle={handle}
           onWidget={onWidget}
         />
+        <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => {
+          const grid = blocks.find((block) => block.kind === "social_grid");
+          if (grid) onOpenBlockChange(grid.id);
+          else onAddKind("social_grid");
+        }}>
+          <LayoutGrid className="h-4 w-4" /> {t("studio.grid.heading")}
+        </Button>
 
         <ProfileLinksManager
           blocks={blocks}

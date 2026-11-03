@@ -22,7 +22,7 @@ import { BookingStudioPanel } from "@/components/imported-pages/BookingStudio";
 type PageMode = "profile" | "tip" | "booking" | "qa";
 
 /** /studio — the dedicated Profile Hub (link-in-bio) workspace. */
-export default function Studio() {
+export default function Studio({ initialGrid = false }: { initialGrid?: boolean } = {}) {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
   const nav = useNavigate();
@@ -135,7 +135,7 @@ export default function Studio() {
               <>
                 {pageMode === "booking" && <BookingStudioPanel />}
                 <div hidden={pageMode === "booking"}>
-                  <ProfileEditor key={variant} variant={variant} pageMode={pageMode === "booking" ? "profile" : pageMode} onPagesChange={updatePages} />
+                  <ProfileEditor key={variant} variant={variant} initialGrid={initialGrid} pageMode={pageMode === "booking" ? "profile" : pageMode} onPagesChange={updatePages} />
                 </div>
               </>
             )}
