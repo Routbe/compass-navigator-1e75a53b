@@ -129,7 +129,7 @@ export function SocialGridBlockSettings({
                     type="button"
                     onClick={() => setOpen(expanded ? null : item.id)}
                     aria-expanded={expanded}
-                    className="min-w-0 flex-1 text-left"
+                    className="h-auto min-w-0 flex-1 flex-col items-start gap-0 text-left"
                   >
                     <span className="block truncate text-[11px] font-medium text-foreground">
                       {item.caption || t(`studio.grid.platform.${item.platform}`)}

@@ -1,9 +1,10 @@
 # Repository import
-- [ ] Connect Neon and inspect the actual runtime role and schema without altering existing data.
-- [ ] Integrate social grid management in the existing profile studio with localized copy, manual edits, pinning, ordering, and video indicators.
-- [ ] Add owner-scoped storage and public profile rendering; verify Neon migration and authenticated create/read/update flow.
-- [ ] Verify desktop/mobile rendering and existing tests; inspect harness compiler results.
-- [ ] Implement automatic social imports only when provider access and per-user authorization are available.
+- [x] Connect Neon and inspect the actual runtime role and schema without altering existing data.
+- [x] Integrate social grid management in the existing profile studio with localized copy, manual edits, pinning, ordering, and video indicators.
+- [x] Apply and verify the owner-scoped Neon grid index; preserve published profile rendering; 23 targeted tests passed.
+- [x] Verify desktop/mobile grid layout and controls with isolated test cards; harness reports build OK.
+- [ ] Verify authenticated save/publish/readback and real uploaded images — blocked by an active imported ROUT account session; Cloud sessions are not compatible with its cookie auth.
+- [ ] Implement automatic social imports — blocked by provider access and per-user authorization.
 - [x] Download and inspect permitted repository source.
 - [x] Import application source, assets, dependency requirements, and schema references without repository metadata.
 - [x] Verify compilation, representative tests, homepage, navigation, and command flow on desktop and phone.

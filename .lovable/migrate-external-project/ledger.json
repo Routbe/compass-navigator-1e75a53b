@@ -13,15 +13,15 @@
     }
   },
   "database": {
-    "status": "not_migrated",
-    "reason": "Source custom PostgreSQL schema requires reviewed adaptation; SQL references retained unapplied."
+    "status": "connected_existing_neon",
+    "reason": "Existing ROUT Neon schema connected through guarded rout_app transport; social-grid 0184 migration applied and schema, RLS, privileges, and trigger verified. Other imported SQL remains unapplied."
   },
   "accounts": {
     "status": "blocked",
     "reason": "Source user export and ownership mapping not supplied."
   },
   "services": {
-    "status": "unconfigured",
+    "status": "partially_configured",
     "reason": "Source provider credentials and data not included in repository."
   },
   "cloud": {
@@ -30,7 +30,7 @@
   },
   "verification": {
     "status": "public_flows_verified",
-    "tests_passed": 17,
+    "tests_passed": 23,
     "build": "OK",
     "desktop_phone": [
       "homepage",
@@ -39,7 +39,8 @@
       "command /developers",
       "claim identity destination"
     ],
-    "authenticated_flows": "blocked by missing original account configuration",
+    "authenticated_flows": "Not verified: no active imported ROUT cookie-session. Managed Cloud auth is a different account system.",
+    "social_grid": "Isolated real-component desktop/phone checks confirm 3/2 columns, pinned ordering, destination edits, reorder controls, and localized media dialog; real image loading and authenticated save/publish remain unverified.",
     "source_visual_comparison": "blocked by Vercel login"
   },
   "cutover": {
