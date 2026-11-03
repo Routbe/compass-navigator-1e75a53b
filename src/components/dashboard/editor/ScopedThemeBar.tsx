@@ -119,7 +119,7 @@ export function ScopedThemeBar({ prefs, setPref, scope = "all", showTypography =
 
   const variants = BUTTON_VARIANTS.filter((v) => (OVERRIDE_BUTTON_VARIANTS as readonly string[]).includes(v.id));
   const radii = BUTTON_RADII.filter((r) => (OVERRIDE_BUTTON_RADII as readonly string[]).includes(r.id));
-  const sample = glassSurfaceStyle(tokens, scope === "all" ? "links" : scope, { links: true, presence: true, board: true, booking: true });
+  const sample = glassSurfaceStyle(tokens, scope === "all" ? "links" : (scope as Exclude<ThemeScope, "all">), { links: true, presence: true, board: true, booking: true });
 
   return (
     <section className="space-y-4">

@@ -1,3 +1,4 @@
+import { StudioToggleCard } from "@/components/studio/StudioToggleCard";
 import { useI18n } from "@/lib/i18n";
 import { PresenceComposer } from "@/components/qa/PresenceComposer";
 import { FeedbackPanel } from "@/components/studio/FeedbackPanel";

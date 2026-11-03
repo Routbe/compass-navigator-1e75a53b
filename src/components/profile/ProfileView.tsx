@@ -1,3 +1,4 @@
+import { runCustomVisitEffect, normalizeVisitCustom } from "@/lib/visit-effect-custom";
 import { glassSurfaceStyle, resolveComponentDesign, resolveScopedTokens, scopeOfBlockKind } from "@/lib/theme-engine";
 import { LocaleDropdown } from "@/components/LocaleDropdown";
 import { profileSurface } from "@/lib/profile-surface";
